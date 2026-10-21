@@ -1,6 +1,8 @@
 #ifndef GEUI_HPP_
 #define GEUI_HPP_
 
+#include "Backend.hpp"
+
 /**
  * @brief GEUI: DirectX12 向けのリテインド型UIライブラリ
  */
