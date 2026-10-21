@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GEUI.hpp" />
-    <ClInclude Include="include\GEUI\Backend.hpp" />
+    <ClInclude Include="include\Backend.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Backend.cpp" />
