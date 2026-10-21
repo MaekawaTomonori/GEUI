@@ -12,9 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GEUI.hpp" />
+    <ClInclude Include="include\GEUI\Backend.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GEUI.cpp" />
+    <ClCompile Include="src\Backend.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -4,6 +4,9 @@
     <Filter Include="include">
       <UniqueIdentifier>{5B7A1C3E-2D44-4F0A-9E61-3C8D2A7F1B10}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\GEUI">
+      <UniqueIdentifier>{C4D9E2A7-3B61-4E8F-A15C-7D20F9B4E6A3}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{8F2E6D90-71B3-4A5C-B4D8-0E19C6A3F2D7}</UniqueIdentifier>
     </Filter>
@@ -12,9 +15,12 @@
     <ClInclude Include="include\GEUI.hpp">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\GEUI\Backend.hpp">
+      <Filter>include\GEUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GEUI.cpp">
+    <ClCompile Include="src\Backend.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
