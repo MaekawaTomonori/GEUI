@@ -13,6 +13,15 @@
     <Filter Include="src\Backend">
       <UniqueIdentifier>{2E7B5F14-9C3A-4D86-B0E1-6A4F8D2C9B75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Render">
+      <UniqueIdentifier>{7A3C9E21-5B84-4F6D-9C12-E0B4D7A58F36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{D19F4B62-8E37-4A05-B6C1-3F7E2A90C548}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders">
+      <UniqueIdentifier>{4E86A1D3-C25F-4B97-8A0E-9D3B6F14E72C}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GEUI.hpp">
@@ -20,6 +29,15 @@
     </ClInclude>
     <ClInclude Include="include\Backend\Backend.hpp">
       <Filter>include\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Render\Instance.hpp">
+      <Filter>src\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Render\Renderer.hpp">
+      <Filter>src\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Render\ShaderLoader.hpp">
+      <Filter>src\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -29,5 +47,22 @@
     <ClCompile Include="src\Backend\Backend.cpp">
       <Filter>src\Backend</Filter>
     </ClCompile>
+    <ClCompile Include="src\Render\Renderer.cpp">
+      <Filter>src\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Render\ShaderLoader.cpp">
+      <Filter>src\Render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\Shaders\Quad.hlsli">
+      <Filter>resources\Shaders</Filter>
+    </None>
+    <None Include="resources\Shaders\Quad.PS.hlsl">
+      <Filter>resources\Shaders</Filter>
+    </None>
+    <None Include="resources\Shaders\Quad.VS.hlsl">
+      <Filter>resources\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
