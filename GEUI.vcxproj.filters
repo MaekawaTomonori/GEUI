@@ -30,6 +30,9 @@
     <ClInclude Include="include\Backend\Backend.hpp">
       <Filter>include\Backend</Filter>
     </ClInclude>
+    <ClInclude Include="include\Backend\TextureProvider.hpp">
+      <Filter>include\Backend</Filter>
+    </ClInclude>
     <ClInclude Include="src\Render\Instance.hpp">
       <Filter>src\Render</Filter>
     </ClInclude>

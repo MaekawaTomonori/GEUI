@@ -1,6 +1,7 @@
 #include "Render/Renderer.hpp"
 
 #include <algorithm>
+#include <climits>
 #include <cstddef>
 #include <cstring>
 #include <iterator>
@@ -13,6 +14,7 @@ namespace GEUI {
         constexpr uint32_t MAX_INSTANCE_COUNT = 1024;
         constexpr UINT ROOT_SCREEN_SIZE = 0;
         constexpr UINT ROOT_INSTANCES = 1;
+        constexpr UINT ROOT_TEXTURES = 2;
         constexpr UINT VERTEX_COUNT_PER_QUAD = 6;
     }
 
@@ -31,7 +33,7 @@ namespace GEUI {
         screenSize_[1] = static_cast<float>(_height);
     }
 
-    void Renderer::Draw(ID3D12GraphicsCommandList* _commandList, std::span<const Instance> _instances) {
+    void Renderer::Draw(ID3D12GraphicsCommandList* _commandList, DescriptorHandle _textureHeap, std::span<const Instance> _instances) {
         if (_instances.empty()) {
             return;
         }
@@ -46,11 +48,12 @@ namespace GEUI {
         _commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         _commandList->SetGraphicsRoot32BitConstants(ROOT_SCREEN_SIZE, 2, screenSize_, 0);
         _commandList->SetGraphicsRootShaderResourceView(ROOT_INSTANCES, instanceBuffer_->GetGPUVirtualAddress());
+        _commandList->SetGraphicsRootDescriptorTable(ROOT_TEXTURES, D3D12_GPU_DESCRIPTOR_HANDLE{ _textureHeap.ptr });
         _commandList->DrawInstanced(VERTEX_COUNT_PER_QUAD, static_cast<UINT>(count), 0, 0);
     }
 
     bool Renderer::CreateRootSignature(ID3D12Device* _device) {
-        D3D12_ROOT_PARAMETER parameters[2] = {};
+        D3D12_ROOT_PARAMETER parameters[3] = {};
 
         parameters[ROOT_SCREEN_SIZE].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
         parameters[ROOT_SCREEN_SIZE].Constants.ShaderRegister = 0;
@@ -61,9 +64,35 @@ namespace GEUI {
         parameters[ROOT_INSTANCES].Descriptor.ShaderRegister = 0;
         parameters[ROOT_INSTANCES].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
+        // ヒープ全体を束ね、インスタンスごとの番号で引く
+        D3D12_DESCRIPTOR_RANGE textureRange = {};
+        textureRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        textureRange.NumDescriptors = UINT_MAX;
+        textureRange.BaseShaderRegister = 0;
+        textureRange.RegisterSpace = 1;
+        textureRange.OffsetInDescriptorsFromTableStart = 0;
+
+        parameters[ROOT_TEXTURES].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        parameters[ROOT_TEXTURES].DescriptorTable.NumDescriptorRanges = 1;
+        parameters[ROOT_TEXTURES].DescriptorTable.pDescriptorRanges = &textureRange;
+        parameters[ROOT_TEXTURES].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+        D3D12_STATIC_SAMPLER_DESC sampler = {};
+        sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+        sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+        // UI は等倍前後で描くので、ミップで滲ませない
+        sampler.MaxLOD = 0.0f;
+        sampler.ShaderRegister = 0;
+        sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
         D3D12_ROOT_SIGNATURE_DESC desc = {};
         desc.NumParameters = static_cast<UINT>(std::size(parameters));
         desc.pParameters = parameters;
+        desc.NumStaticSamplers = 1;
+        desc.pStaticSamplers = &sampler;
 
         Microsoft::WRL::ComPtr<ID3DBlob> signature;
         Microsoft::WRL::ComPtr<ID3DBlob> error;

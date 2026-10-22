@@ -7,6 +7,7 @@
 #include <d3d12.h>
 #include <wrl/client.h>
 
+#include "Backend/TextureProvider.hpp"
 #include "Render/Instance.hpp"
 
 namespace GEUI {
@@ -38,9 +39,10 @@ namespace GEUI {
 
         /** @brief Draw instances
          * @param _commandList コマンドリスト
+         * @param _textureHeap テクスチャのヒープの先頭
          * @param _instances インスタンス
          */
-        void Draw(ID3D12GraphicsCommandList* _commandList, std::span<const Instance> _instances);
+        void Draw(ID3D12GraphicsCommandList* _commandList, DescriptorHandle _textureHeap, std::span<const Instance> _instances);
 
     private:
         bool CreateRootSignature(ID3D12Device* _device);

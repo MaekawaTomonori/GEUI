@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="include\GEUI.hpp" />
     <ClInclude Include="include\Backend\Backend.hpp" />
+    <ClInclude Include="include\Backend\TextureProvider.hpp" />
     <ClInclude Include="src\Render\Instance.hpp" />
     <ClInclude Include="src\Render\Renderer.hpp" />
     <ClInclude Include="src\Render\ShaderLoader.hpp" />

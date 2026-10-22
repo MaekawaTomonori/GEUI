@@ -11,8 +11,8 @@ namespace GEUI {
     Backend::Backend() = default;
     Backend::~Backend() = default;
 
-    bool Backend::Setup(ID3D12Device* _device, DXGI_FORMAT _rtvFormat, uint32_t _width, uint32_t _height) {
-        if (_device == nullptr || _rtvFormat == DXGI_FORMAT_UNKNOWN || _width == 0 || _height == 0) {
+    bool Backend::Setup(ID3D12Device* _device, DXGI_FORMAT _rtvFormat, uint32_t _width, uint32_t _height, TextureProvider* _textures) {
+        if (_device == nullptr || _rtvFormat == DXGI_FORMAT_UNKNOWN || _width == 0 || _height == 0 || _textures == nullptr) {
             return false;
         }
 
@@ -26,6 +26,7 @@ namespace GEUI {
         renderer->Resize(_width, _height);
 
         renderer_ = std::move(renderer);
+        textures_ = _textures;
         return true;
     }
 
@@ -46,11 +47,13 @@ namespace GEUI {
         const Instance instances[] = {
             { { 200.0f, 200.0f }, { 100.0f, 100.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
             { { 260.0f, 260.0f }, { 100.0f, 100.0f }, { 0.0f, 0.0f, 1.0f, 0.5f } },
+            { { 420.0f, 200.0f }, { 100.0f, 100.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, textures_->Resolve("uvChecker.png") },
         };
-        renderer_->Draw(_commandList, instances);
+        renderer_->Draw(_commandList, textures_->GetHeap(), instances);
     }
 
     void Backend::Teardown() {
         renderer_.reset();
+        textures_ = nullptr;
     }
 }
