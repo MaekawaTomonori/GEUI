@@ -1,7 +1,6 @@
 #ifndef GEUI_CANVAS_HPP_
 #define GEUI_CANVAS_HPP_
 
-#include <span>
 #include <vector>
 
 #include "Render/Instance.hpp"
@@ -15,7 +14,8 @@ namespace GEUI {
     class Canvas {
         Vector2 referenceSize_{};
         Widget root_;
-        std::vector<Instance> instances_;
+        int order_ = 0;
+        bool visible_ = true;
 
     public:
         /** @brief Initialize
@@ -33,15 +33,35 @@ namespace GEUI {
          */
         Rect GetReferenceRect() const;
 
+        /** @brief Set order
+         * @param _order 前後の順番（大きいほど手前）
+         */
+        void SetOrder(int _order);
+
+        /** @brief Get order
+         * @return order
+         */
+        int GetOrder() const;
+
+        /** @brief Set visibility
+         * @param _visible 表示するか
+         */
+        void SetVisible(bool _visible);
+
+        /** @brief Get visibility
+         * @return visible
+         */
+        bool IsVisible() const;
+
         /** @brief Build instances
          * @param _screenSize 描画先のサイズ
          * @param _textures テクスチャの解決先
-         * @return instances
+         * @param _instances 書き足す先
          */
-        std::span<const Instance> Build(const Vector2& _screenSize, TextureProvider& _textures);
+        void Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances) const;
 
     private:
-        void Append(const Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures);
+        void Append(const Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, std::vector<Instance>& _instances) const;
     };
 }
 

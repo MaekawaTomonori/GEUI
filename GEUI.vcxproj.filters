@@ -48,6 +48,9 @@
     <ClInclude Include="src\Tree\Canvas.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>
+    <ClInclude Include="src\Tree\CanvasStack.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
     <ClInclude Include="src\Tree\Layout.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>
@@ -69,6 +72,9 @@
       <Filter>src\Render</Filter>
     </ClCompile>
     <ClCompile Include="src\Tree\Canvas.cpp">
+      <Filter>src\Tree</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tree\CanvasStack.cpp">
       <Filter>src\Tree</Filter>
     </ClCompile>
     <ClCompile Include="src\Tree\Layout.cpp">

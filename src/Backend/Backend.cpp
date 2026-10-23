@@ -5,7 +5,7 @@
 
 #include "Render/Renderer.hpp"
 #include "Render/ShaderLoader.hpp"
-#include "Tree/Canvas.hpp"
+#include "Tree/CanvasStack.hpp"
 #include "Tree/Layout.hpp"
 
 namespace GEUI {
@@ -21,8 +21,7 @@ namespace GEUI {
             return *_parent.children.back();
         }
 
-        // 描画の確認用。ファイルから読めるようになったら削除する
-        void BuildTestTree(Canvas& _canvas) {
+        void BuildTestHud(Canvas& _canvas) {
             Widget& root = _canvas.GetRoot();
             const Rect screen = _canvas.GetReferenceRect();
 
@@ -36,6 +35,32 @@ namespace GEUI {
             AddWidget(root, screen, { { 540.0f, 20.0f }, { 200.0f, 40.0f } }, { 1.0f, 1.0f, 0.0f, 1.0f });
             AddWidget(root, screen, { { 560.0f, 300.0f }, { 160.0f, 120.0f } }, { 1.0f, 1.0f, 1.0f, 0.8f });
             AddWidget(root, screen, { { 1000.0f, 560.0f }, { 240.0f, 120.0f } }, { 0.0f, 1.0f, 0.0f, 1.0f });
+        }
+
+        void BuildTestPause(Canvas& _canvas) {
+            Widget& root = _canvas.GetRoot();
+            const Rect screen = _canvas.GetReferenceRect();
+
+            // 描画先が sRGB なので、0.5 では暗さがほとんど分からない
+            AddWidget(root, screen, screen, { 0.0f, 0.0f, 0.0f, 0.85f });
+            AddWidget(root, screen, { { 440.0f, 210.0f }, { 400.0f, 300.0f } }, { 0.3f, 0.3f, 0.3f, 1.0f });
+        }
+
+        // 描画の確認用。ファイルから読めるようになったら削除する
+        void BuildTestCanvases(CanvasStack& _canvases) {
+            // 並べ替えを確かめるため、手前のものから追加する
+            Canvas& pause = _canvases.Add(REFERENCE_SIZE);
+            pause.SetOrder(100);
+            BuildTestPause(pause);
+
+            Canvas& hidden = _canvases.Add(REFERENCE_SIZE);
+            hidden.SetOrder(50);
+            hidden.SetVisible(false);
+            AddWidget(hidden.GetRoot(), hidden.GetReferenceRect(), hidden.GetReferenceRect(), { 1.0f, 0.0f, 1.0f, 1.0f });
+
+            Canvas& hud = _canvases.Add(REFERENCE_SIZE);
+            hud.SetOrder(0);
+            BuildTestHud(hud);
         }
     }
 
@@ -55,12 +80,11 @@ namespace GEUI {
             return false;
         }
 
-        auto canvas = std::make_unique<Canvas>();
-        canvas->Setup(REFERENCE_SIZE);
-        BuildTestTree(*canvas);
+        auto canvases = std::make_unique<CanvasStack>();
+        BuildTestCanvases(*canvases);
 
         renderer_ = std::move(renderer);
-        canvas_ = std::move(canvas);
+        canvases_ = std::move(canvases);
         textures_ = _textures;
         Resize(_width, _height);
         return true;
@@ -82,11 +106,11 @@ namespace GEUI {
         }
 
         const Vector2 screenSize = { static_cast<float>(width_), static_cast<float>(height_) };
-        renderer_->Draw(_commandList, textures_->GetHeap(), canvas_->Build(screenSize, *textures_));
+        renderer_->Draw(_commandList, textures_->GetHeap(), canvases_->Build(screenSize, *textures_));
     }
 
     void Backend::Teardown() {
-        canvas_.reset();
+        canvases_.reset();
         renderer_.reset();
         textures_ = nullptr;
     }

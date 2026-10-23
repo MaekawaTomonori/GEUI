@@ -12,12 +12,12 @@ struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
 
 namespace GEUI {
-    class Canvas;
+    class CanvasStack;
     class Renderer;
 
     class Backend {
         std::unique_ptr<Renderer> renderer_;
-        std::unique_ptr<Canvas> canvas_;
+        std::unique_ptr<CanvasStack> canvases_;
         TextureProvider* textures_ = nullptr;
         uint32_t width_ = 0;
         uint32_t height_ = 0;
