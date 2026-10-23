@@ -16,6 +16,9 @@
     <Filter Include="src\Render">
       <UniqueIdentifier>{7A3C9E21-5B84-4F6D-9C12-E0B4D7A58F36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Tree">
+      <UniqueIdentifier>{B62E8D47-1A93-4C5F-8E07-5D3C9A1F64B2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="resources">
       <UniqueIdentifier>{D19F4B62-8E37-4A05-B6C1-3F7E2A90C548}</UniqueIdentifier>
     </Filter>
@@ -42,6 +45,15 @@
     <ClInclude Include="src\Render\ShaderLoader.hpp">
       <Filter>src\Render</Filter>
     </ClInclude>
+    <ClInclude Include="src\Tree\Canvas.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Tree\Layout.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Tree\Widget.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEUI.cpp">
@@ -55,6 +67,12 @@
     </ClCompile>
     <ClCompile Include="src\Render\ShaderLoader.cpp">
       <Filter>src\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tree\Canvas.cpp">
+      <Filter>src\Tree</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tree\Layout.cpp">
+      <Filter>src\Tree</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

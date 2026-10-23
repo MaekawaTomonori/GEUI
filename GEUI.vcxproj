@@ -17,12 +17,17 @@
     <ClInclude Include="src\Render\Instance.hpp" />
     <ClInclude Include="src\Render\Renderer.hpp" />
     <ClInclude Include="src\Render\ShaderLoader.hpp" />
+    <ClInclude Include="src\Tree\Canvas.hpp" />
+    <ClInclude Include="src\Tree\Layout.hpp" />
+    <ClInclude Include="src\Tree\Widget.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEUI.cpp" />
     <ClCompile Include="src\Backend\Backend.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />
     <ClCompile Include="src\Render\ShaderLoader.cpp" />
+    <ClCompile Include="src\Tree\Canvas.cpp" />
+    <ClCompile Include="src\Tree\Layout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shaders\Quad.hlsli" />
