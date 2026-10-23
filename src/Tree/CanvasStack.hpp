@@ -14,6 +14,7 @@ namespace GEUI {
     class CanvasStack {
         std::vector<std::unique_ptr<Canvas>> canvases_;
         std::vector<Instance> instances_;
+        std::vector<Widget*> path_;
 
     public:
         /** @brief Add canvas
@@ -28,6 +29,18 @@ namespace GEUI {
          * @return instances
          */
         std::span<const Instance> Build(const Vector2& _screenSize, TextureProvider& _textures);
+
+        /** @brief Hit test
+         * @param _point 描画先の座標
+         * @return over
+         */
+        bool HitTest(const Vector2& _point);
+
+        /** @brief Click
+         * @param _point 描画先の座標
+         * @return over
+         */
+        bool Click(const Vector2& _point);
     };
 }
 

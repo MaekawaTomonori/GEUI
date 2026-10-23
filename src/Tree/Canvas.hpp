@@ -16,6 +16,7 @@ namespace GEUI {
         Widget root_;
         int order_ = 0;
         bool visible_ = true;
+        bool blockInput_ = false;
 
     public:
         /** @brief Initialize
@@ -53,15 +54,33 @@ namespace GEUI {
          */
         bool IsVisible() const;
 
+        /** @brief Set input blocking
+         * @param _block 当たらなくても後ろへ入力を通さないか
+         */
+        void SetBlockInput(bool _block);
+
+        /** @brief Get input blocking
+         * @return blocking
+         */
+        bool IsBlockingInput() const;
+
         /** @brief Build instances
          * @param _screenSize 描画先のサイズ
          * @param _textures テクスチャの解決先
          * @param _instances 書き足す先
          */
-        void Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances) const;
+        void Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances);
+
+        /** @brief Hit test
+         * @param _point 描画先の座標
+         * @param _path ルートから当たった Widget までの経路
+         * @return hit
+         */
+        bool HitTest(const Vector2& _point, std::vector<Widget*>& _path);
 
     private:
-        void Append(const Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, std::vector<Instance>& _instances) const;
+        void Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, std::vector<Instance>& _instances);
+        bool HitTest(Widget& _widget, const Vector2& _point, std::vector<Widget*>& _path);
     };
 }
 

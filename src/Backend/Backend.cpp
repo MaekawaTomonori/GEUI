@@ -3,6 +3,8 @@
 #include <memory>
 #include <utility>
 
+#include <Windows.h>
+
 #include "Render/Renderer.hpp"
 #include "Render/ShaderLoader.hpp"
 #include "Tree/CanvasStack.hpp"
@@ -11,6 +13,9 @@
 namespace GEUI {
     namespace {
         constexpr Vector2 REFERENCE_SIZE = { 1280.0f, 720.0f };
+
+        // 確認用の状態。公開ヘッダに出さないためここに置く
+        Canvas* testPause = nullptr;
 
         Widget& AddWidget(Widget& _parent, const Rect& _parentRect, const Rect& _rect, const Vector4& _color, const char* _image = "") {
             auto widget = std::make_unique<Widget>();
@@ -34,7 +39,11 @@ namespace GEUI {
             // 上の中央・中央・右下: それぞれの基準点に付いていくこと
             AddWidget(root, screen, { { 540.0f, 20.0f }, { 200.0f, 40.0f } }, { 1.0f, 1.0f, 0.0f, 1.0f });
             AddWidget(root, screen, { { 560.0f, 300.0f }, { 160.0f, 120.0f } }, { 1.0f, 1.0f, 1.0f, 0.8f });
-            AddWidget(root, screen, { { 1000.0f, 560.0f }, { 240.0f, 120.0f } }, { 0.0f, 1.0f, 0.0f, 1.0f });
+
+            // 右下: Pause の表示中はクリックしても水色にならないこと
+            Widget& corner = AddWidget(root, screen, { { 1000.0f, 560.0f }, { 240.0f, 120.0f } }, { 0.0f, 1.0f, 0.0f, 1.0f });
+            corner.selectable = true;
+            corner.selectedColor = { 0.0f, 1.0f, 1.0f, 1.0f };
         }
 
         void BuildTestPause(Canvas& _canvas) {
@@ -43,15 +52,31 @@ namespace GEUI {
 
             // 描画先が sRGB なので、0.5 では暗さがほとんど分からない
             AddWidget(root, screen, screen, { 0.0f, 0.0f, 0.0f, 0.85f });
-            AddWidget(root, screen, { { 440.0f, 210.0f }, { 400.0f, 300.0f } }, { 0.3f, 0.3f, 0.3f, 1.0f });
+
+            const Rect panel = { { 440.0f, 210.0f }, { 400.0f, 300.0f } };
+            Widget& panelWidget = AddWidget(root, screen, panel, { 0.3f, 0.3f, 0.3f, 1.0f });
+
+            // 左: 押した項目だけが黄色になること
+            for (int i = 0; i < 3; ++i) {
+                const float top = 230.0f + 90.0f * static_cast<float>(i);
+                Widget& item = AddWidget(panelWidget, panel, { { 460.0f, top }, { 160.0f, 70.0f } }, { 0.6f, 0.6f, 0.6f, 1.0f });
+                item.selectable = true;
+                item.selectedColor = { 1.0f, 0.8f, 0.0f, 1.0f };
+            }
+
+            // 右: 押したパネルが手前に来ること。左の項目は位置が変わらないこと
+            AddWidget(panelWidget, panel, { { 640.0f, 240.0f }, { 150.0f, 120.0f } }, { 1.0f, 0.3f, 0.3f, 1.0f }).raisable = true;
+            AddWidget(panelWidget, panel, { { 670.0f, 330.0f }, { 150.0f, 120.0f } }, { 0.3f, 0.5f, 1.0f, 1.0f }).raisable = true;
         }
 
-        // 描画の確認用。ファイルから読めるようになったら削除する
+        // 描画と入力の確認用。ファイルから読めるようになったら削除する
         void BuildTestCanvases(CanvasStack& _canvases) {
             // 並べ替えを確かめるため、手前のものから追加する
             Canvas& pause = _canvases.Add(REFERENCE_SIZE);
             pause.SetOrder(100);
+            pause.SetBlockInput(true);
             BuildTestPause(pause);
+            testPause = &pause;
 
             Canvas& hidden = _canvases.Add(REFERENCE_SIZE);
             hidden.SetOrder(50);
@@ -109,9 +134,67 @@ namespace GEUI {
         renderer_->Draw(_commandList, textures_->GetHeap(), canvases_->Build(screenSize, *textures_));
     }
 
+    bool Backend::HandleMessage(uint32_t _message, [[maybe_unused]] uintptr_t _wParam, intptr_t _lParam) {
+        if (canvases_ == nullptr) {
+            return false;
+        }
+        if (_message != WM_MOUSEMOVE && _message != WM_LBUTTONDOWN && _message != WM_RBUTTONDOWN) {
+            return false;
+        }
+
+        // 座標は符号付き 16bit で入っている（マルチモニタでは負になる）
+        const float clientX = static_cast<float>(static_cast<int16_t>(_lParam & 0xFFFF));
+        const float clientY = static_cast<float>(static_cast<int16_t>((_lParam >> 16) & 0xFFFF));
+
+        // 表示先が設定されていなければ、描画先がそのままウィンドウに出ているとみなす
+        const ScreenRect viewport = hasViewport_ ? viewport_ : ScreenRect{ 0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_) };
+        const float viewportWidth = viewport.right - viewport.left;
+        const float viewportHeight = viewport.bottom - viewport.top;
+        if (viewportWidth <= 0.0f || viewportHeight <= 0.0f) {
+            pointerOver_ = false;
+            return false;
+        }
+
+        const Vector2 ratio = { (clientX - viewport.left) / viewportWidth, (clientY - viewport.top) / viewportHeight };
+        if (ratio.x < 0.0f || ratio.y < 0.0f || ratio.x >= 1.0f || ratio.y >= 1.0f) {
+            pointerOver_ = false;
+            return false;
+        }
+
+        const Vector2 point = { ratio.x * static_cast<float>(width_), ratio.y * static_cast<float>(height_) };
+
+        if (_message == WM_LBUTTONDOWN) {
+            pointerOver_ = canvases_->Click(point);
+            return pointerOver_;
+        }
+
+        // 入力の確認用。Pause の表示を切り替える
+        if (_message == WM_RBUTTONDOWN && testPause != nullptr) {
+            testPause->SetVisible(!testPause->IsVisible());
+        }
+        pointerOver_ = canvases_->HitTest(point);
+        return false;
+    }
+
+    void Backend::SetViewport(const ScreenRect& _rect) {
+        viewport_ = _rect;
+        hasViewport_ = true;
+    }
+
+    void Backend::ResetViewport() {
+        hasViewport_ = false;
+    }
+
+    bool Backend::IsPointerOver() const {
+        return pointerOver_;
+    }
+
     void Backend::Teardown() {
+        testPause = nullptr;
         canvases_.reset();
         renderer_.reset();
         textures_ = nullptr;
+        hasViewport_ = false;
+        pointerOver_ = false;
     }
 }

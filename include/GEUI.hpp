@@ -38,6 +38,28 @@ namespace GEUI {
          */
         void Teardown();
     };
+
+    /** @brief Handle window message
+     * @param _message メッセージ
+     * @param _wParam WPARAM
+     * @param _lParam LPARAM
+     * @return consumed
+     */
+    bool HandleMessage(uint32_t _message, uintptr_t _wParam, intptr_t _lParam);
+
+    /** @brief Set viewport
+     * @param _rect 描画先を表示している矩形
+     */
+    void SetViewport(const ScreenRect& _rect);
+
+    /** @brief Reset viewport
+     */
+    void ResetViewport();
+
+    /** @brief Check pointer over UI
+     * @return over
+     */
+    bool IsPointerOver();
 }
 
 #endif // GEUI_HPP_
