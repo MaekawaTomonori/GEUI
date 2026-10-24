@@ -15,10 +15,9 @@ namespace GEUI {
         /** @brief Resolve rectangle
          * @param _widget 対象の Widget
          * @param _parent 親の矩形
-         * @param _scale 基準解像度からの倍率
          * @return rect
          */
-        Rect Resolve(const Widget& _widget, const Rect& _parent, float _scale);
+        Rect Resolve(const Widget& _widget, const Rect& _parent);
     }
 }
 

@@ -12,6 +12,11 @@ namespace GEUI {
                 const Vector2 d = _a - _b;
                 return d.x * d.x + d.y * d.y;
             }
+
+            // 大きさ 0 の親に対しては割合が決まらないので、0 として扱う
+            Vector2 Ratio(const Vector2& _value, const Vector2& _base) {
+                return { _base.x != 0.0f ? _value.x / _base.x : 0.0f, _base.y != 0.0f ? _value.y / _base.y : 0.0f };
+            }
         }
 
         void Place(Widget& _widget, const Rect& _rect, const Rect& _parent) {
@@ -32,19 +37,20 @@ namespace GEUI {
                                 nearest = distance;
                                 _widget.anchor = anchor;
                                 _widget.pivot = pivot;
-                                _widget.offset = pivotPoint - anchorPoint;
+                                _widget.offset = Ratio(pivotPoint - anchorPoint, _parent.size);
                             }
                         }
                     }
                 }
             }
 
-            _widget.size = _rect.size;
+            _widget.size = Ratio(_rect.size, _parent.size);
         }
 
-        Rect Resolve(const Widget& _widget, const Rect& _parent, float _scale) {
-            const Vector2 size = _widget.size * _scale;
-            const Vector2 pivotPoint = _parent.min + _parent.size * _widget.anchor + _widget.offset * _scale;
+        // 親が伸びれば、アンカーを基準点にして子も同じ割合で伸びる
+        Rect Resolve(const Widget& _widget, const Rect& _parent) {
+            const Vector2 size = _parent.size * _widget.size;
+            const Vector2 pivotPoint = _parent.min + _parent.size * _widget.anchor + _parent.size * _widget.offset;
             return { pivotPoint - size * _widget.pivot, size };
         }
     }

@@ -1,6 +1,5 @@
 #include "Tree/Canvas.hpp"
 
-#include <algorithm>
 #include <memory>
 
 #include "Backend/TextureProvider.hpp"
@@ -68,15 +67,9 @@ namespace GEUI {
         }
 
         void Canvas::Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances) {
-            if (referenceSize_.x <= 0.0f || referenceSize_.y <= 0.0f) {
-                return;
-            }
-
-            // 縦横で同じ倍率を使い、アスペクト比が変わっても歪ませない
-            const float scale = std::min(_screenSize.x / referenceSize_.x, _screenSize.y / referenceSize_.y);
             root_.rect = { {}, _screenSize };
             for (const auto& child : root_.children) {
-                Append(*child, root_.rect, scale, _textures, _instances);
+                Append(*child, root_.rect, _textures, _instances);
             }
         }
 
@@ -95,13 +88,13 @@ namespace GEUI {
             return false;
         }
 
-        void Canvas::Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, std::vector<Instance>& _instances) {
+        void Canvas::Append(Widget& _widget, const Rect& _parent, TextureProvider& _textures, std::vector<Instance>& _instances) {
             if (!_widget.visible) {
                 return;
             }
 
             // ヒット判定は次のフレームでこの矩形を使う
-            _widget.rect = Resolve(_widget, _parent, _scale);
+            _widget.rect = Resolve(_widget, _parent);
 
             // 透明な Widget は子をまとめる入れ物として使う
             const Vector4& color = GetDrawColor(_widget);
@@ -114,7 +107,7 @@ namespace GEUI {
             }
 
             for (const auto& child : _widget.children) {
-                Append(*child, _widget.rect, _scale, _textures, _instances);
+                Append(*child, _widget.rect, _textures, _instances);
             }
         }
 
