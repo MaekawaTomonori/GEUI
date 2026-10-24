@@ -9,6 +9,7 @@
 #include <format>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -226,6 +227,25 @@ namespace GEUI {
             }
         }
 
+        Tree::Widget& AddPart(Tree::Canvas& _canvas, Tree::Widget& _button, std::string_view _name, const Vector2& _size, const Vector4& _color, const Vector4& _selectedColor) {
+            Tree::Widget& part = _canvas.Create(_button, Tree::WidgetType::Quad, _name);
+            part.anchor = { 0.5f, 0.5f };
+            part.pivot = { 0.5f, 0.5f };
+            part.size = _size;
+            part.color = _color;
+            part.selectedStyle.color = _selectedColor;
+            part.followState = true;
+            return part;
+        }
+
+        // 固定部と可動部を最初から置き、アイコンや文字は可動部の子として足してもらう
+        void AddParts(Tree::Canvas& _canvas, Tree::Widget& _button) {
+            _button.selectable = true;
+            AddPart(_canvas, _button, "Background", { 1.0f, 1.0f }, { 0.15f, 0.15f, 0.15f, 1.0f }, { 0.25f, 0.25f, 0.25f, 1.0f });
+            Tree::Widget& foreground = AddPart(_canvas, _button, "Foreground", { 0.9f, 0.8f }, { 0.4f, 0.4f, 0.4f, 1.0f }, { 0.9f, 0.6f, 0.2f, 1.0f });
+            foreground.selectedStyle.scale = 1.05f;
+        }
+
         void Apply(Tree::CanvasStack& _canvases, Tree::Canvas& _canvas, const Request& _request) {
             switch (_request.action) {
             case Action::Add: {
@@ -233,6 +253,9 @@ namespace GEUI {
                 widget.size = { 0.2f, 0.2f };
                 if (widget.type == Tree::WidgetType::Text) {
                     widget.text.text = "Text";
+                }
+                if (widget.type == Tree::WidgetType::Button) {
+                    AddParts(_canvas, widget);
                 }
                 selectedWidget = _canvases.GetId(widget);
                 break;
@@ -372,6 +395,10 @@ namespace GEUI {
             if (ImGui::Button("Add Text")) {
                 _request = { Action::Add, parentOfNew, nullptr, Tree::WidgetType::Text };
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Add Button")) {
+                _request = { Action::Add, parentOfNew, nullptr, Tree::WidgetType::Button };
+            }
             ImGui::BeginDisabled(_selected == nullptr);
             ImGui::SameLine();
             if (ImGui::Button("Remove")) {
@@ -414,7 +441,7 @@ namespace GEUI {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(typeWidth);
             int type = static_cast<int>(_widget.type);
-            if (ImGui::Combo("##Type", &type, "Quad\0Image\0Text\0")) {
+            if (ImGui::Combo("##Type", &type, "Quad\0Image\0Text\0Button\0")) {
                 _widget.type = static_cast<Tree::WidgetType>(type);
             }
 
@@ -448,10 +475,22 @@ namespace GEUI {
                 ImGui::SameLine();
                 ImGui::Checkbox("Selectable", &_widget.selectable);
                 ImGui::SameLine();
+                ImGui::Checkbox("Follow", &_widget.followState);
+                ImGui::SameLine();
                 ImGui::Checkbox("Raisable", &_widget.raisable);
+                DebugWidgets::EndGroup();
+            }
+
+            // 選択中の見た目は、自分か親の状態で選ばれ得る Widget にだけ意味がある
+            if ((_widget.selectable || _widget.followState) && DebugWidgets::BeginGroup("Selected")) {
                 if (_widget.selectable) {
-                    DebugWidgets::ColorEdit4("Selected", &_widget.selectedColor.x);
+                    DebugWidgets::Label("State");
+                    ImGui::Checkbox("Selected", &_widget.selected);
                 }
+                Tree::StateStyle& style = _widget.selectedStyle;
+                DebugWidgets::ColorEdit4("Color", &style.color.x);
+                DebugWidgets::DragFloat2("Shift", &style.shift.x, 0.001f);
+                DebugWidgets::DragFloat("Scale", &style.scale, 0.005f, 0.0f, 4.0f);
                 DebugWidgets::EndGroup();
             }
         }

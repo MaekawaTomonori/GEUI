@@ -21,9 +21,17 @@ namespace GEUI {
 
         /** @brief Kind of widget
          */
-        enum class WidgetType : uint8_t { Quad, Image, Text };
+        enum class WidgetType : uint8_t { Quad, Image, Text, Button };
 
-        constexpr std::string_view TYPE_NAMES[] = { "Quad", "Image", "Text" };
+        constexpr std::string_view TYPE_NAMES[] = { "Quad", "Image", "Text", "Button" };
+
+        /** @brief Appearance in state
+         */
+        struct StateStyle {
+            Vector4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+            Vector2 shift{};
+            float scale = 1.0f;
+        };
 
         /** @brief Alignment in rectangle
          */
@@ -60,15 +68,17 @@ namespace GEUI {
             Vector2 offset{};
             Vector2 size{};
             Vector4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-            Vector4 selectedColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+            StateStyle selectedStyle;
             std::string image;
             TextStyle text;
             bool visible = true;
             bool selectable = false;
             bool selected = false;
+            bool followState = false;
             bool raisable = false;
             std::vector<std::unique_ptr<Widget>> children;
             Rect rect{};
+            bool drawnSelected = false;
             uint32_t id = 0;
         };
 
@@ -77,7 +87,7 @@ namespace GEUI {
          * @return color
          */
         inline const Vector4& GetDrawColor(const Widget& _widget) {
-            return _widget.selected ? _widget.selectedColor : _widget.color;
+            return _widget.drawnSelected ? _widget.selectedStyle.color : _widget.color;
         }
     }
 }

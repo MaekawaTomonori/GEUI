@@ -59,6 +59,11 @@ namespace GEUI {
          * @param _text 文字列
          */
         void SetText(std::string_view _text);
+
+        /** @brief Set selection state
+         * @param _selected 選択中か
+         */
+        void SetSelected(bool _selected);
     };
 }
 

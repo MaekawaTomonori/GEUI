@@ -91,6 +91,18 @@ namespace GEUI {
         widget->text.text = _text;
     }
 
+    void Widget::SetSelected(bool _selected) {
+        Tree::Widget* widget = GetWidget(id_, "SetSelected");
+        if (widget == nullptr) {
+            return;
+        }
+        if (!widget->selectable) {
+            Log(std::format("SetSelected on '{}' which is not selectable", widget->name));
+            return;
+        }
+        widget->selected = _selected;
+    }
+
     Canvas::Canvas(uint32_t _id) : id_(_id) {}
 
     Canvas Canvas::Load(const std::filesystem::path& _path) {

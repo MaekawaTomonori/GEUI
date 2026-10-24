@@ -126,6 +126,18 @@ namespace GEUI {
                 _json["alignY"] = static_cast<int>(_style.alignY);
             }
 
+            // 色だけを持っていた古いファイルは、selectedColor を色として読む
+            void ReadStyle(const Json& _json, StateStyle& _style) {
+                Read(_json, "selectedColor", _style.color);
+                const auto it = _json.find("selectedStyle");
+                if (it == _json.end() || !it->is_object()) {
+                    return;
+                }
+                Read(*it, "color", _style.color);
+                Read(*it, "shift", _style.shift);
+                Read(*it, "scale", _style.scale);
+            }
+
             void ReadChildren(const Json& _json, Widget& _parent) {
                 const auto it = _json.find("children");
                 if (it == _json.end() || !it->is_array()) {
@@ -144,7 +156,7 @@ namespace GEUI {
                     Read(item, "offset", widget->offset);
                     Read(item, "size", widget->size);
                     Read(item, "color", widget->color);
-                    Read(item, "selectedColor", widget->selectedColor);
+                    ReadStyle(item, widget->selectedStyle);
                     Read(item, "image", widget->image);
                     widget->type = ReadType(item, widget->image);
                     if (widget->type == WidgetType::Text) {
@@ -152,6 +164,7 @@ namespace GEUI {
                     }
                     Read(item, "visible", widget->visible);
                     Read(item, "selectable", widget->selectable);
+                    Read(item, "followState", widget->followState);
                     Read(item, "raisable", widget->raisable);
                     ReadChildren(item, *widget);
 
@@ -179,7 +192,11 @@ namespace GEUI {
                     item["offset"] = Write(child->offset);
                     item["size"] = Write(child->size);
                     item["color"] = Write(child->color);
-                    item["selectedColor"] = Write(child->selectedColor);
+                    item["selectedStyle"] = {
+                        { "color", Write(child->selectedStyle.color) },
+                        { "shift", Write(child->selectedStyle.shift) },
+                        { "scale", child->selectedStyle.scale },
+                    };
                     if (child->type == WidgetType::Image) {
                         item["image"] = child->image;
                     }
@@ -188,6 +205,7 @@ namespace GEUI {
                     }
                     item["visible"] = child->visible;
                     item["selectable"] = child->selectable;
+                    item["followState"] = child->followState;
                     item["raisable"] = child->raisable;
                     item["children"] = WriteChildren(*child);
                     children.push_back(std::move(item));

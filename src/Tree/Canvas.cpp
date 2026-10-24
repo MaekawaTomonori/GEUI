@@ -15,6 +15,17 @@ namespace GEUI {
                 return _point.x >= _rect.min.x && _point.x < _rect.min.x + _rect.size.x
                     && _point.y >= _rect.min.y && _point.y < _rect.min.y + _rect.size.y;
             }
+
+            // Button は何も描かないが、押す対象なので当たる
+            bool IsHittable(const Widget& _widget) {
+                return _widget.type == WidgetType::Button || GetDrawColor(_widget).w > 0.0f;
+            }
+
+            Rect ApplyStyle(const Rect& _rect, const Vector2& _pivot, const StateStyle& _style, const Rect& _parent) {
+                const Vector2 pivotPoint = _rect.min + _rect.size * _pivot + _parent.size * _style.shift;
+                const Vector2 size = _rect.size * _style.scale;
+                return { pivotPoint - size * _pivot, size };
+            }
         }
 
         void Canvas::Setup(const Vector2& _referenceSize) {
@@ -82,7 +93,7 @@ namespace GEUI {
             const float scale = referenceSize_.y > 0.0f ? _screenSize.y / referenceSize_.y : 1.0f;
             root_.rect = { {}, _screenSize };
             for (const auto& child : root_.children) {
-                Append(*child, root_.rect, scale, _textures, _fonts, _instances);
+                Append(*child, root_.rect, scale, false, _textures, _fonts, _instances);
             }
         }
 
@@ -101,20 +112,28 @@ namespace GEUI {
             return false;
         }
 
-        void Canvas::Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances) {
+        void Canvas::Append(Widget& _widget, const Rect& _parent, float _scale, bool _parentSelected, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances) {
             if (!_widget.visible) {
                 return;
             }
 
+            _widget.drawnSelected = (_widget.selectable && _widget.selected) || (_widget.followState && _parentSelected);
+
             // ヒット判定は次のフレームでこの矩形を使う
             _widget.rect = Resolve(_widget, _parent);
+            // 拡縮は子の文字にも掛け、中身ごと大きくなるようにする
+            float scale = _scale;
+            if (_widget.drawnSelected) {
+                _widget.rect = ApplyStyle(_widget.rect, _widget.pivot, _widget.selectedStyle, _parent);
+                scale *= _widget.selectedStyle.scale;
+            }
 
             // 透明な Widget は子をまとめる入れ物として使う
             const Vector4& color = GetDrawColor(_widget);
-            if (color.w > 0.0f) {
+            if (_widget.type != WidgetType::Button && color.w > 0.0f) {
                 if (_widget.type == WidgetType::Text) {
                     if (const Font* font = _fonts.Get(_widget.text.font)) {
-                        AppendText(_widget, *font, _scale, _instances);
+                        AppendText(_widget, *font, scale, _instances);
                     }
                 } else {
                     Instance instance{ _widget.rect.min + _widget.rect.size * 0.5f, _widget.rect.size * 0.5f, color };
@@ -126,7 +145,7 @@ namespace GEUI {
             }
 
             for (const auto& child : _widget.children) {
-                Append(*child, _widget.rect, _scale, _textures, _fonts, _instances);
+                Append(*child, _widget.rect, scale, _widget.drawnSelected, _textures, _fonts, _instances);
             }
         }
 
@@ -144,7 +163,7 @@ namespace GEUI {
             }
 
             // 描かれていない入れ物には当たらない
-            if (GetDrawColor(_widget).w > 0.0f && Contains(_widget.rect, _point)) {
+            if (IsHittable(_widget) && Contains(_widget.rect, _point)) {
                 return true;
             }
 

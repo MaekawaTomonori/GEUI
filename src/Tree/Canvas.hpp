@@ -108,7 +108,7 @@ namespace GEUI {
             bool HitTest(const Vector2& _point, std::vector<Widget*>& _path);
 
         private:
-            void Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances);
+            void Append(Widget& _widget, const Rect& _parent, float _scale, bool _parentSelected, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances);
             bool HitTest(Widget& _widget, const Vector2& _point, std::vector<Widget*>& _path);
         };
     }
