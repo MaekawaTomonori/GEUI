@@ -19,6 +19,10 @@
     <ClInclude Include="libs\imgui\imconfig.h" />
     <ClInclude Include="libs\imgui\imgui.h" />
     <ClInclude Include="libs\nlohmann\json.hpp" />
+    <ClInclude Include="libs\stb\stb_truetype.h" />
+    <ClInclude Include="src\Text\Font.hpp" />
+    <ClInclude Include="src\Text\FontCache.hpp" />
+    <ClInclude Include="src\Text\TextLayout.hpp" />
     <ClInclude Include="src\Current.hpp" />
     <ClInclude Include="src\Debug\DebugWidgets.hpp" />
     <ClInclude Include="src\Debug\DebugWindow.hpp" />
@@ -43,6 +47,9 @@
     <ClCompile Include="src\Debug\DebugWindow.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />
     <ClCompile Include="src\Render\ShaderLoader.cpp" />
+    <ClCompile Include="src\Text\Font.cpp" />
+    <ClCompile Include="src\Text\FontCache.cpp" />
+    <ClCompile Include="src\Text\TextLayout.cpp" />
     <ClCompile Include="src\Tree\Canvas.cpp" />
     <ClCompile Include="src\Tree\CanvasFile.cpp" />
     <ClCompile Include="src\Tree\CanvasStack.cpp" />

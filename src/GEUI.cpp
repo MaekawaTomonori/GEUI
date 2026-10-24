@@ -57,8 +57,8 @@ namespace GEUI {
     }
 
     void Debug(bool* _open) {
-        if (current != nullptr && current->GetCanvases() != nullptr && current->GetTextures() != nullptr) {
-            DrawDebugWindow(*current->GetCanvases(), *current->GetTextures(), _open);
+        if (current != nullptr && current->GetCanvases() != nullptr && current->GetTextures() != nullptr && current->GetFonts() != nullptr) {
+            DrawDebugWindow(*current->GetCanvases(), *current->GetTextures(), *current->GetFonts(), _open);
         }
     }
 }

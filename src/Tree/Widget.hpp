@@ -21,9 +21,26 @@ namespace GEUI {
 
         /** @brief Kind of widget
          */
-        enum class WidgetType : uint8_t { Quad, Image };
+        enum class WidgetType : uint8_t { Quad, Image, Text };
 
-        constexpr std::string_view TYPE_NAMES[] = { "Quad", "Image" };
+        constexpr std::string_view TYPE_NAMES[] = { "Quad", "Image", "Text" };
+
+        /** @brief Alignment in rectangle
+         */
+        enum class TextAlign : uint8_t { Start, Center, End };
+
+        /** @brief Text parameters
+         */
+        struct TextStyle {
+            std::string text;
+            std::string font;
+            float size = 24.0f;
+            float weight = 0.0f;
+            float spacing = 0.0f;
+            float lineHeight = 1.2f;
+            TextAlign alignX = TextAlign::Start;
+            TextAlign alignY = TextAlign::Start;
+        };
 
         /** @brief Get type name
          * @param _type 種類
@@ -45,6 +62,7 @@ namespace GEUI {
             Vector4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
             Vector4 selectedColor{ 1.0f, 1.0f, 1.0f, 1.0f };
             std::string image;
+            TextStyle text;
             bool visible = true;
             bool selectable = false;
             bool selected = false;

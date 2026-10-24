@@ -79,6 +79,18 @@ namespace GEUI {
         widget->image = _image;
     }
 
+    void Widget::SetText(std::string_view _text) {
+        Tree::Widget* widget = GetWidget(id_, "SetText");
+        if (widget == nullptr) {
+            return;
+        }
+        if (widget->type != Tree::WidgetType::Text) {
+            Log(std::format("SetText on '{}' which is not a text", widget->name));
+            return;
+        }
+        widget->text.text = _text;
+    }
+
     Canvas::Canvas(uint32_t _id) : id_(_id) {}
 
     Canvas Canvas::Load(const std::filesystem::path& _path) {

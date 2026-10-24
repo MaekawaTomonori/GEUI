@@ -22,7 +22,9 @@ VSOutput main(uint _vertexId : SV_VertexID, uint _instanceId : SV_InstanceID) {
     VSOutput output;
     output.position = float4(ndc, 0.0f, 1.0f);
     output.color = instance.color;
-    output.uv = corner * 0.5f + 0.5f;
+    output.uv = lerp(instance.uvRect.xy, instance.uvRect.zw, corner * 0.5f + 0.5f);
     output.texIndex = instance.texIndex;
+    output.kind = instance.kind;
+    output.weight = instance.weight;
     return output;
 }

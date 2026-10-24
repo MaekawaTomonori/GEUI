@@ -45,6 +45,32 @@ namespace GEUI {
         }
 
         // ラベルを "##" と連結すると毎回文字列を確保するので、ID は PushID で分ける
+        bool DragFloat(const char* _label, float* _v, float _speed, float _min, float _max) {
+            Label(_label);
+            ImGui::PushID(_label);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            const bool changed = ImGui::DragFloat("##", _v, _speed, _min, _max);
+            ImGui::PopID();
+            return changed;
+        }
+
+        bool Combo(const char* _label, int* _current, const char* _items) {
+            Label(_label);
+            ImGui::PushID(_label);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            const bool changed = ImGui::Combo("##", _current, _items);
+            ImGui::PopID();
+            return changed;
+        }
+
+        bool InputTextMultiline(const char* _label, char* _buffer, size_t _size) {
+            Label(_label);
+            ImGui::PushID(_label);
+            const bool changed = ImGui::InputTextMultiline("##", _buffer, _size, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 3.0f));
+            ImGui::PopID();
+            return changed;
+        }
+
         bool DragFloat2(const char* _label, float* _v, float _speed, float _min, float _max, const char* _axes) {
             Label(_label);
             ImGui::PushID(_label);

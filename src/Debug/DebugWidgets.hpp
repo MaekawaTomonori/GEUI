@@ -15,6 +15,32 @@ namespace GEUI {
          */
         void EndGroup();
 
+        /** @brief Drag float in one row
+         * @param _label ラベル
+         * @param _v 値
+         * @param _speed 速さ
+         * @param _min 最小値
+         * @param _max 最大値
+         * @return changed
+         */
+        bool DragFloat(const char* _label, float* _v, float _speed, float _min = 0.0f, float _max = 0.0f);
+
+        /** @brief Combo in one row
+         * @param _label ラベル
+         * @param _current 選択中の番号
+         * @param _items '\0' 区切りの項目
+         * @return changed
+         */
+        bool Combo(const char* _label, int* _current, const char* _items);
+
+        /** @brief Multiline text in one row
+         * @param _label ラベル
+         * @param _buffer 文字列
+         * @param _size 容量
+         * @return changed
+         */
+        bool InputTextMultiline(const char* _label, char* _buffer, size_t _size);
+
         /** @brief Drag two floats in one row
          * @param _label ラベル
          * @param _v 値

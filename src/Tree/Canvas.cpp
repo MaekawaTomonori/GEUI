@@ -3,6 +3,8 @@
 #include <memory>
 
 #include "Backend/TextureProvider.hpp"
+#include "Text/FontCache.hpp"
+#include "Text/TextLayout.hpp"
 #include "Tree/Layout.hpp"
 #include "Tree/Name.hpp"
 
@@ -75,10 +77,12 @@ namespace GEUI {
             return blockInput_;
         }
 
-        void Canvas::Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances) {
+        void Canvas::Build(const Vector2& _screenSize, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances) {
+            // 文字の大きさは割合ではなく基準解像度の px で持つので、画面の高さに合わせて拡縮する
+            const float scale = referenceSize_.y > 0.0f ? _screenSize.y / referenceSize_.y : 1.0f;
             root_.rect = { {}, _screenSize };
             for (const auto& child : root_.children) {
-                Append(*child, root_.rect, _textures, _instances);
+                Append(*child, root_.rect, scale, _textures, _fonts, _instances);
             }
         }
 
@@ -97,7 +101,7 @@ namespace GEUI {
             return false;
         }
 
-        void Canvas::Append(Widget& _widget, const Rect& _parent, TextureProvider& _textures, std::vector<Instance>& _instances) {
+        void Canvas::Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances) {
             if (!_widget.visible) {
                 return;
             }
@@ -108,15 +112,21 @@ namespace GEUI {
             // 透明な Widget は子をまとめる入れ物として使う
             const Vector4& color = GetDrawColor(_widget);
             if (color.w > 0.0f) {
-                Instance instance{ _widget.rect.min + _widget.rect.size * 0.5f, _widget.rect.size * 0.5f, color };
-                if (_widget.type == WidgetType::Image && !_widget.image.empty()) {
-                    instance.texIndex = _textures.Resolve(_widget.image);
+                if (_widget.type == WidgetType::Text) {
+                    if (const Font* font = _fonts.Get(_widget.text.font)) {
+                        AppendText(_widget, *font, _scale, _instances);
+                    }
+                } else {
+                    Instance instance{ _widget.rect.min + _widget.rect.size * 0.5f, _widget.rect.size * 0.5f, color };
+                    if (_widget.type == WidgetType::Image && !_widget.image.empty()) {
+                        instance.texIndex = _textures.Resolve(_widget.image);
+                    }
+                    _instances.push_back(instance);
                 }
-                _instances.push_back(instance);
             }
 
             for (const auto& child : _widget.children) {
-                Append(*child, _widget.rect, _textures, _instances);
+                Append(*child, _widget.rect, _scale, _textures, _fonts, _instances);
             }
         }
 

@@ -80,9 +80,10 @@ namespace GEUI {
             /** @brief Build instances
              * @param _screenSize 描画先のサイズ
              * @param _textures テクスチャ
+             * @param _fonts フォント
              * @return instances
              */
-            std::span<const Instance> Build(const Vector2& _screenSize, TextureProvider& _textures);
+            std::span<const Instance> Build(const Vector2& _screenSize, TextureProvider& _textures, FontCache& _fonts);
 
             /** @brief Hit test
              * @param _point 描画先の座標

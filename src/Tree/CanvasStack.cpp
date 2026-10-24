@@ -134,7 +134,7 @@ namespace GEUI {
             return _widget.id;
         }
 
-        std::span<const Instance> CanvasStack::Build(const Vector2& _screenSize, TextureProvider& _textures) {
+        std::span<const Instance> CanvasStack::Build(const Vector2& _screenSize, TextureProvider& _textures, FontCache& _fonts) {
             // 同じ順番どうしは追加した順に描く
             std::stable_sort(canvases_.begin(), canvases_.end(), [](const auto& _a, const auto& _b) {
                 return _a->GetOrder() < _b->GetOrder();
@@ -143,7 +143,7 @@ namespace GEUI {
             instances_.clear();
             for (const auto& canvas : canvases_) {
                 if (canvas->IsVisible()) {
-                    canvas->Build(_screenSize, _textures, instances_);
+                    canvas->Build(_screenSize, _textures, _fonts, instances_);
                 }
             }
             return instances_;

@@ -28,6 +28,12 @@
     <Filter Include="src\Debug">
       <UniqueIdentifier>{F18A3C67-2E94-4B5D-A07C-93D6E1B48F20}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs\stb">
+      <UniqueIdentifier>{0B5E7A29-C3D4-4F81-9A6E-2D7F4B1C83E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Text">
+      <UniqueIdentifier>{A47C1E93-5B28-4D6F-8E30-F9C2B6D41A87}</UniqueIdentifier>
+    </Filter>
     <Filter Include="libs\nlohmann">
       <UniqueIdentifier>{3A7E9D15-B42C-4F86-9E03-6D1C8A47F2B5}</UniqueIdentifier>
     </Filter>
@@ -65,6 +71,18 @@
     </ClInclude>
     <ClInclude Include="src\Debug\DebugWindow.hpp">
       <Filter>src\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\stb\stb_truetype.h">
+      <Filter>libs\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Text\Font.hpp">
+      <Filter>src\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Text\FontCache.hpp">
+      <Filter>src\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Text\TextLayout.hpp">
+      <Filter>src\Text</Filter>
     </ClInclude>
     <ClInclude Include="libs\nlohmann\json.hpp">
       <Filter>libs\nlohmann</Filter>
@@ -130,6 +148,15 @@
     </ClCompile>
     <ClCompile Include="src\Render\ShaderLoader.cpp">
       <Filter>src\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Text\Font.cpp">
+      <Filter>src\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Text\FontCache.cpp">
+      <Filter>src\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Text\TextLayout.cpp">
+      <Filter>src\Text</Filter>
     </ClCompile>
     <ClCompile Include="src\Tree\Canvas.cpp">
       <Filter>src\Tree</Filter>

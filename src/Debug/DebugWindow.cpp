@@ -18,6 +18,7 @@
 #include "Backend/TextureProvider.hpp"
 #include "Debug/DebugWidgets.hpp"
 #include "Log.hpp"
+#include "Text/FontCache.hpp"
 #include "Tree/CanvasStack.hpp"
 #include "Tree/Name.hpp"
 
@@ -40,23 +41,19 @@ namespace GEUI {
         uint32_t selectedWidget = 0;
         uint32_t bufferOwner = 0;
         char nameBuffer[64] = {};
+        char textBuffer[1024] = {};
         std::vector<std::string> loadedNames;
         std::vector<std::string> availableNames;
+        std::vector<std::string> fontPaths;
 
         std::string ToText(const std::filesystem::path& _path) {
             const std::u8string text = _path.generic_u8string();
             return std::string(text.begin(), text.end());
         }
 
-        bool OpenImage(const std::filesystem::path& _directory, std::string& _name) {
-            if (_directory.empty()) {
-                Log("texture directory is not provided");
-                return false;
-            }
-
-            // フィルタは '\0' 区切りなので、途中で切れないよう長さ付きで渡す
-            using namespace std::string_literals;
-            const std::filesystem::path file = Utils::OpenFileDialog("Image\0*.png;*.jpg;*.jpeg;*.dds;*.tga\0"s);
+        // 選んだファイルを _directory からの相対名に直す。外にあるファイルは、読む側が解決できないので受け付けない
+        bool OpenFile(const std::string& _filter, const std::filesystem::path& _directory, std::string& _name) {
+            const std::filesystem::path file = Utils::OpenFileDialog(_filter);
             if (file.empty()) {
                 return false;
             }
@@ -67,7 +64,6 @@ namespace GEUI {
                 return false;
             }
 
-            // ホストが解決できるのはテクスチャのフォルダからの相対名だけ
             const std::filesystem::path relative = std::filesystem::relative(file, root, error);
             if (error || relative.empty() || *relative.begin() == "..") {
                 Log(std::format("'{}' is outside '{}'", ToText(file), ToText(root)));
@@ -77,11 +73,69 @@ namespace GEUI {
             return true;
         }
 
+        bool OpenImage(const std::filesystem::path& _directory, std::string& _name) {
+            if (_directory.empty()) {
+                Log("texture directory is not provided");
+                return false;
+            }
+            // フィルタは '\0' 区切りなので、途中で切れないよう長さ付きで渡す
+            using namespace std::string_literals;
+            return OpenFile("Image\0*.png;*.jpg;*.jpeg;*.dds;*.tga\0"s, _directory, _name);
+        }
+
+        // フォントのパスは、Canvas のファイルと同じくカレントディレクトリからの相対で持つ
+        bool OpenFont(std::string& _name) {
+            using namespace std::string_literals;
+            return OpenFile("Font\0*.ttf;*.otf\0"s, std::filesystem::current_path(), _name);
+        }
+
+        float ButtonWidth(const char* _label) {
+            const ImGuiStyle& style = ImGui::GetStyle();
+            return ImGui::CalcTextSize(_label).x + style.FramePadding.x * 2.0f + style.ItemSpacing.x;
+        }
+
+        void DrawFont(FontCache& _fonts, Tree::TextStyle& _style) {
+            if (DebugWidgets::BeginCombo("Font", _style.font.c_str(), ButtonWidth("..."))) {
+                if (ImGui::IsWindowAppearing()) {
+                    _fonts.GetPaths(fontPaths);
+                }
+                for (const std::string& path : fontPaths) {
+                    if (ImGui::Selectable(path.c_str(), path == _style.font)) {
+                        _style.font = path;
+                    }
+                }
+                DebugWidgets::EndCombo();
+            }
+
+            ImGui::SameLine();
+            if (std::string name; ImGui::Button("...##font") && OpenFont(name)) {
+                _style.font = name;
+            }
+        }
+
+        void DrawTextStyle(FontCache& _fonts, Tree::TextStyle& _style) {
+            if (DebugWidgets::InputTextMultiline("Text", textBuffer, sizeof(textBuffer))) {
+                _style.text = textBuffer;
+            }
+            DrawFont(_fonts, _style);
+            DebugWidgets::DragFloat("Size", &_style.size, 0.5f, 1.0f, 512.0f);
+            DebugWidgets::DragFloat("Weight", &_style.weight, 0.05f, -4.0f, 4.0f);
+            DebugWidgets::DragFloat("Spacing", &_style.spacing, 0.1f);
+            DebugWidgets::DragFloat("Line", &_style.lineHeight, 0.01f, 0.1f, 8.0f);
+
+            int alignX = static_cast<int>(_style.alignX);
+            if (DebugWidgets::Combo("Align X", &alignX, "Left\0Center\0Right\0")) {
+                _style.alignX = static_cast<Tree::TextAlign>(alignX);
+            }
+            int alignY = static_cast<int>(_style.alignY);
+            if (DebugWidgets::Combo("Align Y", &alignY, "Top\0Middle\0Bottom\0")) {
+                _style.alignY = static_cast<Tree::TextAlign>(alignY);
+            }
+        }
+
         void DrawImage(TextureProvider& _textures, Tree::Widget& _widget) {
             // 右に「...」ボタンを並べる分だけ、コンボボックスを縮める
-            const ImGuiStyle& style = ImGui::GetStyle();
-            const float button = ImGui::CalcTextSize("...").x + style.FramePadding.x * 2.0f + style.ItemSpacing.x;
-            if (DebugWidgets::BeginCombo("Image", _widget.image.c_str(), button)) {
+            if (DebugWidgets::BeginCombo("Image", _widget.image.c_str(), ButtonWidth("..."))) {
                 // ディスクを読む一覧もあるので、開いたときだけ取り直す
                 if (ImGui::IsWindowAppearing()) {
                     loadedNames.clear();
@@ -177,6 +231,9 @@ namespace GEUI {
             case Action::Add: {
                 Tree::Widget& widget = _canvas.Create(*_request.target, _request.type);
                 widget.size = { 0.2f, 0.2f };
+                if (widget.type == Tree::WidgetType::Text) {
+                    widget.text.text = "Text";
+                }
                 selectedWidget = _canvases.GetId(widget);
                 break;
             }
@@ -311,6 +368,10 @@ namespace GEUI {
             if (ImGui::Button("Add Image")) {
                 _request = { Action::Add, parentOfNew, nullptr, Tree::WidgetType::Image };
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Add Text")) {
+                _request = { Action::Add, parentOfNew, nullptr, Tree::WidgetType::Text };
+            }
             ImGui::BeginDisabled(_selected == nullptr);
             ImGui::SameLine();
             if (ImGui::Button("Remove")) {
@@ -334,9 +395,10 @@ namespace GEUI {
             }
         }
 
-        void DrawProperties(TextureProvider& _textures, Tree::Widget& _root, Tree::Widget& _widget) {
+        void DrawProperties(TextureProvider& _textures, FontCache& _fonts, Tree::Widget& _root, Tree::Widget& _widget) {
             if (bufferOwner != _widget.id) {
                 Copy(nameBuffer, sizeof(nameBuffer), _widget.name);
+                Copy(textBuffer, sizeof(textBuffer), _widget.text.text);
                 bufferOwner = _widget.id;
             }
 
@@ -352,7 +414,7 @@ namespace GEUI {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(typeWidth);
             int type = static_cast<int>(_widget.type);
-            if (ImGui::Combo("##Type", &type, "Quad\0Image\0")) {
+            if (ImGui::Combo("##Type", &type, "Quad\0Image\0Text\0")) {
                 _widget.type = static_cast<Tree::WidgetType>(type);
             }
 
@@ -375,6 +437,11 @@ namespace GEUI {
                 DebugWidgets::EndGroup();
             }
 
+            if (_widget.type == Tree::WidgetType::Text && DebugWidgets::BeginGroup("Text")) {
+                DrawTextStyle(_fonts, _widget.text);
+                DebugWidgets::EndGroup();
+            }
+
             if (DebugWidgets::BeginGroup("Behavior")) {
                 DebugWidgets::Label("Flags");
                 ImGui::Checkbox("Visible", &_widget.visible);
@@ -390,7 +457,7 @@ namespace GEUI {
         }
     }
 
-    void DrawDebugWindow(Tree::CanvasStack& _canvases, TextureProvider& _textures, bool* _open) {
+    void DrawDebugWindow(Tree::CanvasStack& _canvases, TextureProvider& _textures, FontCache& _fonts, bool* _open) {
         // 同梱のヘッダとホストの ImGui の版が違うと、構造体の並びがずれて壊れる
         IMGUI_CHECKVERSION();
 
@@ -422,7 +489,7 @@ namespace GEUI {
             ImGui::SameLine();
             ImGui::BeginChild("Properties", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders);
             if (selected != nullptr) {
-                DrawProperties(_textures, root, *selected);
+                DrawProperties(_textures, _fonts, root, *selected);
             }
             ImGui::EndChild();
 
@@ -436,7 +503,7 @@ namespace GEUI {
 #else
 
 namespace GEUI {
-    void DrawDebugWindow(Tree::CanvasStack&, TextureProvider&, bool*) {}
+    void DrawDebugWindow(Tree::CanvasStack&, TextureProvider&, FontCache&, bool*) {}
 }
 
 #endif

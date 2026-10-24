@@ -96,6 +96,36 @@ namespace GEUI {
                 return _image.empty() ? WidgetType::Quad : WidgetType::Image;
             }
 
+            void Read(const Json& _json, const char* _key, TextAlign& _value) {
+                int value = static_cast<int>(_value);
+                Read(_json, _key, value);
+                if (value >= 0 && value <= static_cast<int>(TextAlign::End)) {
+                    _value = static_cast<TextAlign>(value);
+                }
+            }
+
+            void ReadText(const Json& _json, TextStyle& _style) {
+                Read(_json, "text", _style.text);
+                Read(_json, "font", _style.font);
+                Read(_json, "fontSize", _style.size);
+                Read(_json, "weight", _style.weight);
+                Read(_json, "spacing", _style.spacing);
+                Read(_json, "lineHeight", _style.lineHeight);
+                Read(_json, "alignX", _style.alignX);
+                Read(_json, "alignY", _style.alignY);
+            }
+
+            void WriteText(Json& _json, const TextStyle& _style) {
+                _json["text"] = _style.text;
+                _json["font"] = _style.font;
+                _json["fontSize"] = _style.size;
+                _json["weight"] = _style.weight;
+                _json["spacing"] = _style.spacing;
+                _json["lineHeight"] = _style.lineHeight;
+                _json["alignX"] = static_cast<int>(_style.alignX);
+                _json["alignY"] = static_cast<int>(_style.alignY);
+            }
+
             void ReadChildren(const Json& _json, Widget& _parent) {
                 const auto it = _json.find("children");
                 if (it == _json.end() || !it->is_array()) {
@@ -117,6 +147,9 @@ namespace GEUI {
                     Read(item, "selectedColor", widget->selectedColor);
                     Read(item, "image", widget->image);
                     widget->type = ReadType(item, widget->image);
+                    if (widget->type == WidgetType::Text) {
+                        ReadText(item, widget->text);
+                    }
                     Read(item, "visible", widget->visible);
                     Read(item, "selectable", widget->selectable);
                     Read(item, "raisable", widget->raisable);
@@ -149,6 +182,9 @@ namespace GEUI {
                     item["selectedColor"] = Write(child->selectedColor);
                     if (child->type == WidgetType::Image) {
                         item["image"] = child->image;
+                    }
+                    if (child->type == WidgetType::Text) {
+                        WriteText(item, child->text);
                     }
                     item["visible"] = child->visible;
                     item["selectable"] = child->selectable;

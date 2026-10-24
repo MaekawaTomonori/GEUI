@@ -7,6 +7,7 @@
 
 #include "Render/Renderer.hpp"
 #include "Render/ShaderLoader.hpp"
+#include "Text/FontCache.hpp"
 #include "Tree/CanvasStack.hpp"
 
 namespace GEUI {
@@ -28,6 +29,8 @@ namespace GEUI {
 
         renderer_ = std::move(renderer);
         canvases_ = std::make_unique<Tree::CanvasStack>();
+        fonts_ = std::make_unique<FontCache>();
+        fonts_->Setup(_device, _textures);
         textures_ = _textures;
         Resize(_width, _height);
         return true;
@@ -49,7 +52,10 @@ namespace GEUI {
         }
 
         const Vector2 screenSize = { static_cast<float>(width_), static_cast<float>(height_) };
-        renderer_->Draw(_commandList, textures_->GetHeap(), canvases_->Build(screenSize, *textures_));
+        const std::span<const Instance> instances = canvases_->Build(screenSize, *textures_, *fonts_);
+        // 組み立ての中で初めて使われたフォントがあるので、描く前に写す
+        fonts_->Upload(_commandList);
+        renderer_->Draw(_commandList, textures_->GetHeap(), instances);
     }
 
     bool Backend::HandleMessage(uint32_t _message, [[maybe_unused]] uintptr_t _wParam, intptr_t _lParam) {
@@ -111,7 +117,15 @@ namespace GEUI {
         return textures_;
     }
 
+    FontCache* Backend::GetFonts() {
+        return fonts_.get();
+    }
+
     void Backend::Teardown() {
+        if (fonts_ != nullptr) {
+            fonts_->Release();
+            fonts_.reset();
+        }
         canvases_.reset();
         renderer_.reset();
         textures_ = nullptr;

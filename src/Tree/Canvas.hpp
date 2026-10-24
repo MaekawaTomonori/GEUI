@@ -9,6 +9,7 @@
 #include "Tree/Widget.hpp"
 
 namespace GEUI {
+    class FontCache;
     class TextureProvider;
 
     namespace Tree {
@@ -94,9 +95,10 @@ namespace GEUI {
             /** @brief Build instances
              * @param _screenSize 描画先のサイズ
              * @param _textures テクスチャ
+             * @param _fonts フォント
              * @param _instances 出力先
              */
-            void Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances);
+            void Build(const Vector2& _screenSize, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances);
 
             /** @brief Hit test
              * @param _point 描画先の座標
@@ -106,7 +108,7 @@ namespace GEUI {
             bool HitTest(const Vector2& _point, std::vector<Widget*>& _path);
 
         private:
-            void Append(Widget& _widget, const Rect& _parent, TextureProvider& _textures, std::vector<Instance>& _instances);
+            void Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances);
             bool HitTest(Widget& _widget, const Vector2& _point, std::vector<Widget*>& _path);
         };
     }

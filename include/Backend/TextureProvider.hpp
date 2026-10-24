@@ -14,6 +14,13 @@ namespace GEUI {
         uint64_t ptr = 0;
     };
 
+    /** @brief Descriptor lent by host
+     */
+    struct DescriptorSlot {
+        uint64_t cpu = 0;
+        uint32_t index = UINT32_MAX;
+    };
+
     /** @brief Texture resolver
      */
     class TextureProvider {
@@ -30,6 +37,17 @@ namespace GEUI {
          * @return index
          */
         virtual uint32_t Resolve(std::string_view _name) = 0;
+
+        /** @brief Allocate descriptor
+         * @param _slot 出力先
+         * @return succeeded
+         */
+        virtual bool AllocateDescriptor([[maybe_unused]] DescriptorSlot& _slot) { return false; }
+
+        /** @brief Free descriptor
+         * @param _index 番号
+         */
+        virtual void FreeDescriptor([[maybe_unused]] uint32_t _index) {}
 
         /** @brief Get loaded texture names
          * @param _names 出力先

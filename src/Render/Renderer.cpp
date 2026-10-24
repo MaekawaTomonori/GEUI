@@ -11,7 +11,8 @@
 
 namespace GEUI {
     namespace {
-        constexpr uint32_t MAX_INSTANCE_COUNT = 1024;
+        // 文字は1文字ごとに1つ使うので、Quad だけのときより多めに取る
+        constexpr uint32_t MAX_INSTANCE_COUNT = 4096;
         constexpr UINT ROOT_SCREEN_SIZE = 0;
         constexpr UINT ROOT_INSTANCES = 1;
         constexpr UINT ROOT_TEXTURES = 2;

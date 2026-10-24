@@ -15,6 +15,7 @@ namespace GEUI {
     namespace Tree {
         class CanvasStack;
     }
+    class FontCache;
     class Renderer;
 
     /** @brief Rectangle in client coordinates
@@ -29,6 +30,7 @@ namespace GEUI {
     class Backend {
         std::unique_ptr<Renderer> renderer_;
         std::unique_ptr<Tree::CanvasStack> canvases_;
+        std::unique_ptr<FontCache> fonts_;
         TextureProvider* textures_ = nullptr;
         uint32_t width_ = 0;
         uint32_t height_ = 0;
@@ -92,6 +94,11 @@ namespace GEUI {
          * @return textures
          */
         TextureProvider* GetTextures();
+
+        /** @brief Get fonts
+         * @return fonts
+         */
+        FontCache* GetFonts();
 
         /** @brief Release
          */

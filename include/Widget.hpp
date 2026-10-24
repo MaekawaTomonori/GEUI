@@ -54,6 +54,11 @@ namespace GEUI {
          * @param _image 画像名
          */
         void SetImage(std::string_view _image);
+
+        /** @brief Set text
+         * @param _text 文字列
+         */
+        void SetText(std::string_view _text);
     };
 }
 
