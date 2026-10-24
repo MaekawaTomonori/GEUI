@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "Math/Vector2.hpp"
@@ -18,10 +19,25 @@ namespace GEUI {
             Vector2 size{};
         };
 
+        /** @brief Kind of widget
+         */
+        enum class WidgetType : uint8_t { Quad, Image };
+
+        constexpr std::string_view TYPE_NAMES[] = { "Quad", "Image" };
+
+        /** @brief Get type name
+         * @param _type 種類
+         * @return name
+         */
+        constexpr std::string_view GetTypeName(WidgetType _type) {
+            return TYPE_NAMES[static_cast<size_t>(_type)];
+        }
+
         /** @brief Node of UI tree
          */
         struct Widget {
             std::string name;
+            WidgetType type = WidgetType::Quad;
             Vector2 anchor{};
             Vector2 pivot{};
             Vector2 offset{};
@@ -39,7 +55,7 @@ namespace GEUI {
         };
 
         /** @brief Get color to draw
-         * @param _widget 対象の Widget
+         * @param _widget 対象
          * @return color
          */
         inline const Vector4& GetDrawColor(const Widget& _widget) {

@@ -8,15 +8,15 @@ namespace GEUI {
         class Canvas;
 
         /** @brief Load canvas from file
-         * @param _path 読むファイル
-         * @param _canvas 中身を置き換える Canvas
+         * @param _path パス
+         * @param _canvas 出力先
          * @return succeeded
          */
         bool LoadCanvas(const std::filesystem::path& _path, Canvas& _canvas);
 
         /** @brief Save canvas to file
-         * @param _path 書くファイル
-         * @param _canvas 書き出す Canvas
+         * @param _path パス
+         * @param _canvas 対象
          * @return succeeded
          */
         bool SaveCanvas(const std::filesystem::path& _path, const Canvas& _canvas);

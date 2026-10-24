@@ -22,6 +22,12 @@
     <Filter Include="libs">
       <UniqueIdentifier>{9C4F2A71-6E58-4B13-A7D2-1F8E5B30C964}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs\imgui">
+      <UniqueIdentifier>{6D2B8F43-A915-4E7C-B3D0-8C14E9F72A56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Debug">
+      <UniqueIdentifier>{F18A3C67-2E94-4B5D-A07C-93D6E1B48F20}</UniqueIdentifier>
+    </Filter>
     <Filter Include="libs\nlohmann">
       <UniqueIdentifier>{3A7E9D15-B42C-4F86-9E03-6D1C8A47F2B5}</UniqueIdentifier>
     </Filter>
@@ -47,6 +53,18 @@
     </ClInclude>
     <ClInclude Include="include\Widget.hpp">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imgui\imconfig.h">
+      <Filter>libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\imgui\imgui.h">
+      <Filter>libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Debug\DebugWidgets.hpp">
+      <Filter>src\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Debug\DebugWindow.hpp">
+      <Filter>src\Debug</Filter>
     </ClInclude>
     <ClInclude Include="libs\nlohmann\json.hpp">
       <Filter>libs\nlohmann</Filter>
@@ -100,6 +118,12 @@
     </ClCompile>
     <ClCompile Include="src\Backend\Backend.cpp">
       <Filter>src\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Debug\DebugWidgets.cpp">
+      <Filter>src\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Debug\DebugWindow.cpp">
+      <Filter>src\Debug</Filter>
     </ClCompile>
     <ClCompile Include="src\Render\Renderer.cpp">
       <Filter>src\Render</Filter>

@@ -5,7 +5,7 @@
 
 namespace GEUI {
     /** @brief Write message to debugger
-     * @param _message UTF-8 の文
+     * @param _message メッセージ
      */
     void Log(std::string_view _message);
 }

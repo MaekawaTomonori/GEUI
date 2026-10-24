@@ -24,9 +24,9 @@ namespace GEUI {
 
     public:
         /** @brief Initialize
-         * @param _device 描画に使うデバイス
+         * @param _device デバイス
          * @param _rtvFormat レンダーターゲットのフォーマット
-         * @param _shaders シェーダの読み込み元
+         * @param _shaders シェーダ
          * @return succeeded
          */
         bool Setup(ID3D12Device* _device, DXGI_FORMAT _rtvFormat, const ShaderLoader& _shaders);
@@ -39,7 +39,7 @@ namespace GEUI {
 
         /** @brief Draw instances
          * @param _commandList コマンドリスト
-         * @param _textureHeap テクスチャのヒープの先頭
+         * @param _textureHeap ヒープの先頭
          * @param _instances インスタンス
          */
         void Draw(ID3D12GraphicsCommandList* _commandList, DescriptorHandle _textureHeap, std::span<const Instance> _instances);

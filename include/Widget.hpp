@@ -18,7 +18,7 @@ namespace GEUI {
         Widget() = default;
 
         /** @brief Create from id
-         * @param _key GEUI の中でだけ作れる鍵
+         * @param _key 鍵
          * @param _id 番号
          */
         Widget(const Key& _key, uint32_t _id);
@@ -29,7 +29,7 @@ namespace GEUI {
         bool IsValid() const;
 
         /** @brief Find widget by path
-         * @param _path この Widget からの名前を '/' で区切ったもの
+         * @param _path パス
          * @return widget
          */
         Widget Find(std::string_view _path) const;
@@ -51,7 +51,7 @@ namespace GEUI {
         void SetColor(const Vector4& _color);
 
         /** @brief Set image
-         * @param _image 画像の名前
+         * @param _image 画像名
          */
         void SetImage(std::string_view _image);
     };

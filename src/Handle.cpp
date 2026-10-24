@@ -68,9 +68,15 @@ namespace GEUI {
     }
 
     void Widget::SetImage(std::string_view _image) {
-        if (Tree::Widget* widget = GetWidget(id_, "SetImage")) {
-            widget->image = _image;
+        Tree::Widget* widget = GetWidget(id_, "SetImage");
+        if (widget == nullptr) {
+            return;
         }
+        if (widget->type != Tree::WidgetType::Image) {
+            Log(std::format("SetImage on '{}' which is not an image", widget->name));
+            return;
+        }
+        widget->image = _image;
     }
 
     Canvas::Canvas(uint32_t _id) : id_(_id) {}

@@ -11,9 +11,6 @@
 namespace GEUI {
     namespace Tree {
         namespace {
-            // 種類ができるまでは、すべて同じ種類として数える
-            constexpr std::string_view TYPE = "Widget";
-
             bool IsValidName(std::string_view _name) {
                 if (_name.empty()) {
                     return false;
@@ -40,8 +37,8 @@ namespace GEUI {
             }
 
             // 消した番号は詰めない。名前が変わるとゲーム側の文字列が別の Widget を指すため
-            std::string MakeName(const Widget& _root) {
-                const std::string prefix = std::string(TYPE) + "_";
+            std::string MakeName(const Widget& _root, WidgetType _type) {
+                const std::string prefix = std::string(GetTypeName(_type)) + "_";
                 uint32_t max = 0;
                 FindMaxNumber(_root, prefix, max);
                 return std::format("{}{:02}", prefix, max + 1);
@@ -50,7 +47,7 @@ namespace GEUI {
             void Assign(const Widget& _root, Widget& _widget) {
                 for (const auto& child : _widget.children) {
                     if (child->name.empty()) {
-                        child->name = MakeName(_root);
+                        child->name = MakeName(_root, child->type);
                     }
                     Assign(_root, *child);
                 }
@@ -94,6 +91,21 @@ namespace GEUI {
                     return;
                 }
             }
+        }
+
+        bool Rename(const Widget& _parent, Widget& _widget, std::string_view _name) {
+            if (!IsValidName(_name)) {
+                Log(std::format("invalid name '{}'", _name));
+                return false;
+            }
+            for (const auto& sibling : _parent.children) {
+                if (sibling.get() != &_widget && sibling->name == _name) {
+                    Log(std::format("duplicate name '{}'", _name));
+                    return false;
+                }
+            }
+            _widget.name = _name;
+            return true;
         }
 
         void FillNames(Widget& _root) {

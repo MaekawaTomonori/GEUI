@@ -1,6 +1,7 @@
 #include "GEUI.hpp"
 
 #include "Current.hpp"
+#include "Debug/DebugWindow.hpp"
 
 namespace GEUI {
     namespace {
@@ -53,5 +54,11 @@ namespace GEUI {
 
     bool IsPointerOver() {
         return current != nullptr && current->IsPointerOver();
+    }
+
+    void Debug(bool* _open) {
+        if (current != nullptr && current->GetCanvases() != nullptr && current->GetTextures() != nullptr) {
+            DrawDebugWindow(*current->GetCanvases(), *current->GetTextures(), _open);
+        }
     }
 }

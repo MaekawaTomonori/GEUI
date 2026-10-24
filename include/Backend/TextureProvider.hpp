@@ -2,7 +2,10 @@
 #define GEUI_TEXTURE_PROVIDER_HPP_
 
 #include <cstdint>
+#include <filesystem>
+#include <string>
 #include <string_view>
+#include <vector>
 
 namespace GEUI {
     /** @brief GPU descriptor handle
@@ -27,6 +30,21 @@ namespace GEUI {
          * @return index
          */
         virtual uint32_t Resolve(std::string_view _name) = 0;
+
+        /** @brief Get loaded texture names
+         * @param _names 出力先
+         */
+        virtual void GetLoadedNames([[maybe_unused]] std::vector<std::string>& _names) const {}
+
+        /** @brief Get available texture names
+         * @param _names 出力先
+         */
+        virtual void GetAvailableNames([[maybe_unused]] std::vector<std::string>& _names) const {}
+
+        /** @brief Get texture directory
+         * @return directory
+         */
+        virtual std::filesystem::path GetDirectory() const { return {}; }
     };
 }
 

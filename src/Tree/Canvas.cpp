@@ -19,6 +19,14 @@ namespace GEUI {
             referenceSize_ = _referenceSize;
         }
 
+        void Canvas::SetPath(const std::filesystem::path& _path) {
+            path_ = _path;
+        }
+
+        const std::filesystem::path& Canvas::GetPath() const {
+            return path_;
+        }
+
         Widget& Canvas::GetRoot() {
             return root_;
         }
@@ -27,9 +35,10 @@ namespace GEUI {
             return root_;
         }
 
-        Widget& Canvas::Create(Widget& _parent, std::string_view _name) {
+        Widget& Canvas::Create(Widget& _parent, WidgetType _type, std::string_view _name) {
             auto widget = std::make_unique<Widget>();
             widget->name = _name;
+            widget->type = _type;
             _parent.children.push_back(std::move(widget));
 
             Widget& created = *_parent.children.back();
@@ -100,7 +109,7 @@ namespace GEUI {
             const Vector4& color = GetDrawColor(_widget);
             if (color.w > 0.0f) {
                 Instance instance{ _widget.rect.min + _widget.rect.size * 0.5f, _widget.rect.size * 0.5f, color };
-                if (!_widget.image.empty()) {
+                if (_widget.type == WidgetType::Image && !_widget.image.empty()) {
                     instance.texIndex = _textures.Resolve(_widget.image);
                 }
                 _instances.push_back(instance);

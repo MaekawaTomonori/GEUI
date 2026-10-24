@@ -19,7 +19,7 @@ namespace GEUI {
         Canvas() = default;
 
         /** @brief Load canvas
-         * @param _path 読むファイル（カレントディレクトリからの相対）
+         * @param _path パス
          * @return canvas
          */
         static Canvas Load(const std::filesystem::path& _path);
@@ -44,17 +44,17 @@ namespace GEUI {
         bool IsVisible() const;
 
         /** @brief Set order
-         * @param _order 前後の順番（大きいほど手前）
+         * @param _order 順番
          */
         void SetOrder(int _order);
 
         /** @brief Set input blocking
-         * @param _block 当たらなくても後ろへ入力を通さないか
+         * @param _block 入力を遮るか
          */
         void SetBlockInput(bool _block);
 
         /** @brief Find widget by path
-         * @param _path ルートからの名前を '/' で区切ったもの
+         * @param _path パス
          * @return widget
          */
         Widget Find(std::string_view _path) const;

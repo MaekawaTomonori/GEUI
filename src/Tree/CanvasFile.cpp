@@ -84,6 +84,18 @@ namespace GEUI {
                 }
             }
 
+            // type の無い古いファイルは、画像の有無で種類を決める
+            WidgetType ReadType(const Json& _json, const std::string& _image) {
+                std::string name;
+                Read(_json, "type", name);
+                for (size_t i = 0; i < std::size(TYPE_NAMES); ++i) {
+                    if (name == TYPE_NAMES[i]) {
+                        return static_cast<WidgetType>(i);
+                    }
+                }
+                return _image.empty() ? WidgetType::Quad : WidgetType::Image;
+            }
+
             void ReadChildren(const Json& _json, Widget& _parent) {
                 const auto it = _json.find("children");
                 if (it == _json.end() || !it->is_array()) {
@@ -104,6 +116,7 @@ namespace GEUI {
                     Read(item, "color", widget->color);
                     Read(item, "selectedColor", widget->selectedColor);
                     Read(item, "image", widget->image);
+                    widget->type = ReadType(item, widget->image);
                     Read(item, "visible", widget->visible);
                     Read(item, "selectable", widget->selectable);
                     Read(item, "raisable", widget->raisable);
@@ -127,13 +140,16 @@ namespace GEUI {
                 for (const auto& child : _parent.children) {
                     Json item;
                     item["name"] = child->name;
+                    item["type"] = std::string(GetTypeName(child->type));
                     item["anchor"] = Write(child->anchor);
                     item["pivot"] = Write(child->pivot);
                     item["offset"] = Write(child->offset);
                     item["size"] = Write(child->size);
                     item["color"] = Write(child->color);
                     item["selectedColor"] = Write(child->selectedColor);
-                    item["image"] = child->image;
+                    if (child->type == WidgetType::Image) {
+                        item["image"] = child->image;
+                    }
                     item["visible"] = child->visible;
                     item["selectable"] = child->selectable;
                     item["raisable"] = child->raisable;

@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <memory>
 #include <span>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -25,37 +26,60 @@ namespace GEUI {
 
         public:
             /** @brief Load canvas
-             * @param _path 読むファイル
+             * @param _path パス
              * @return id
              */
             uint32_t Load(const std::filesystem::path& _path);
 
             /** @brief Unload canvas
-             * @param _id Canvas の番号
+             * @param _id 番号
              */
             void Unload(uint32_t _id);
 
+            /** @brief Save canvas to its file
+             * @param _canvas 対象
+             * @return succeeded
+             */
+            bool Save(const Canvas& _canvas);
+
+            /** @brief Reload canvas from its file
+             * @param _canvas 対象
+             * @return succeeded
+             */
+            bool Reload(Canvas& _canvas);
+
+            /** @brief Remove widget
+             * @param _parent 親
+             * @param _widget 対象
+             */
+            void Remove(Widget& _parent, const Widget& _widget);
+
+            /** @brief Get all canvases
+             * @return canvases
+             */
+            const std::vector<std::unique_ptr<Canvas>>& GetAll() const;
+
             /** @brief Get canvas
-             * @param _id Canvas の番号
+             * @param _id 番号
              * @return canvas
              */
             Canvas* GetCanvas(uint32_t _id);
 
             /** @brief Get widget
-             * @param _id Widget の番号
+             * @param _id 番号
              * @return widget
              */
             Widget* GetWidget(uint32_t _id);
 
             /** @brief Get widget id
-             * @param _widget 番号を知りたい Widget
+             * @param _widget 対象
              * @return id
              */
             uint32_t GetId(Widget& _widget);
 
             /** @brief Build instances
              * @param _screenSize 描画先のサイズ
-             * @param _textures テクスチャの解決先
+             * @param _textures テクスチャ
              * @return instances
              */
             std::span<const Instance> Build(const Vector2& _screenSize, TextureProvider& _textures);
@@ -74,6 +98,7 @@ namespace GEUI {
 
         private:
             void Forget(const Widget& _widget);
+            void Restore(Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids);
         };
     }
 }

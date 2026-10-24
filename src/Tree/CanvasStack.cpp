@@ -40,6 +40,20 @@ namespace GEUI {
                     }
                 }
             }
+
+            std::string JoinPath(const std::string& _prefix, const std::string& _name) {
+                return _prefix.empty() ? _name : _prefix + "/" + _name;
+            }
+
+            void CollectIds(const Widget& _widget, const std::string& _prefix, std::unordered_map<std::string, uint32_t>& _ids) {
+                for (const auto& child : _widget.children) {
+                    const std::string path = JoinPath(_prefix, child->name);
+                    if (child->id != 0) {
+                        _ids.emplace(path, child->id);
+                    }
+                    CollectIds(*child, path, _ids);
+                }
+            }
         }
 
         uint32_t CanvasStack::Load(const std::filesystem::path& _path) {
@@ -47,6 +61,7 @@ namespace GEUI {
             if (!LoadCanvas(_path, *canvas)) {
                 return 0;
             }
+            canvas->SetPath(_path);
 
             // 番号は使い回さない。古いハンドルが別の Canvas を指さないようにする
             const uint32_t id = nextId_++;
@@ -66,6 +81,38 @@ namespace GEUI {
             canvasIds_.erase(it);
             path_.clear();
             std::erase_if(canvases_, [canvas](const auto& _canvas) { return _canvas.get() == canvas; });
+        }
+
+        bool CanvasStack::Save(const Canvas& _canvas) {
+            return SaveCanvas(_canvas.GetPath(), _canvas);
+        }
+
+        bool CanvasStack::Reload(Canvas& _canvas) {
+            Canvas loaded;
+            if (!LoadCanvas(_canvas.GetPath(), loaded)) {
+                return false;
+            }
+
+            // 同じパスにある Widget へ前の番号を付け直し、ゲームが持つハンドルを読み直し後も使えるようにする
+            std::unordered_map<std::string, uint32_t> ids;
+            CollectIds(_canvas.GetRoot(), {}, ids);
+            Forget(_canvas.GetRoot());
+            path_.clear();
+
+            loaded.SetPath(_canvas.GetPath());
+            _canvas = std::move(loaded);
+            Restore(_canvas.GetRoot(), {}, ids);
+            return true;
+        }
+
+        void CanvasStack::Remove(Widget& _parent, const Widget& _widget) {
+            Forget(_widget);
+            path_.clear();
+            std::erase_if(_parent.children, [&_widget](const auto& _child) { return _child.get() == &_widget; });
+        }
+
+        const std::vector<std::unique_ptr<Canvas>>& CanvasStack::GetAll() const {
+            return canvases_;
         }
 
         Canvas* CanvasStack::GetCanvas(uint32_t _id) {
@@ -136,6 +183,17 @@ namespace GEUI {
             }
             for (const auto& child : _widget.children) {
                 Forget(*child);
+            }
+        }
+
+        void CanvasStack::Restore(Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids) {
+            for (const auto& child : _widget.children) {
+                const std::string path = JoinPath(_prefix, child->name);
+                if (const auto it = _ids.find(path); it != _ids.end()) {
+                    child->id = it->second;
+                    widgetIds_[child->id] = child.get();
+                }
+                Restore(*child, path, _ids);
             }
         }
     }

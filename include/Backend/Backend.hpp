@@ -41,11 +41,11 @@ namespace GEUI {
         ~Backend();
 
         /** @brief Initialize
-         * @param _device 描画に使うデバイス
+         * @param _device デバイス
          * @param _rtvFormat レンダーターゲットのフォーマット
          * @param _width 描画先の幅
          * @param _height 描画先の高さ
-         * @param _textures テクスチャの解決先
+         * @param _textures テクスチャ
          * @return succeeded
          */
         bool Setup(ID3D12Device* _device, DXGI_FORMAT _rtvFormat, uint32_t _width, uint32_t _height, TextureProvider* _textures);
@@ -70,7 +70,7 @@ namespace GEUI {
         bool HandleMessage(uint32_t _message, uintptr_t _wParam, intptr_t _lParam);
 
         /** @brief Set viewport
-         * @param _rect 描画先を表示している矩形
+         * @param _rect 表示先の矩形
          */
         void SetViewport(const ScreenRect& _rect);
 
@@ -87,6 +87,11 @@ namespace GEUI {
          * @return canvases
          */
         Tree::CanvasStack* GetCanvases();
+
+        /** @brief Get texture provider
+         * @return textures
+         */
+        TextureProvider* GetTextures();
 
         /** @brief Release
          */

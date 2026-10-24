@@ -16,8 +16,12 @@
     <ClInclude Include="include\Backend\TextureProvider.hpp" />
     <ClInclude Include="include\Canvas.hpp" />
     <ClInclude Include="include\Widget.hpp" />
+    <ClInclude Include="libs\imgui\imconfig.h" />
+    <ClInclude Include="libs\imgui\imgui.h" />
     <ClInclude Include="libs\nlohmann\json.hpp" />
     <ClInclude Include="src\Current.hpp" />
+    <ClInclude Include="src\Debug\DebugWidgets.hpp" />
+    <ClInclude Include="src\Debug\DebugWindow.hpp" />
     <ClInclude Include="src\Key.hpp" />
     <ClInclude Include="src\Log.hpp" />
     <ClInclude Include="src\Render\Instance.hpp" />
@@ -35,6 +39,8 @@
     <ClCompile Include="src\Handle.cpp" />
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\Backend\Backend.cpp" />
+    <ClCompile Include="src\Debug\DebugWidgets.cpp" />
+    <ClCompile Include="src\Debug\DebugWindow.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />
     <ClCompile Include="src\Render\ShaderLoader.cpp" />
     <ClCompile Include="src\Tree\Canvas.cpp" />

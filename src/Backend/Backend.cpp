@@ -107,6 +107,10 @@ namespace GEUI {
         return canvases_.get();
     }
 
+    TextureProvider* Backend::GetTextures() {
+        return textures_;
+    }
+
     void Backend::Teardown() {
         canvases_.reset();
         renderer_.reset();
