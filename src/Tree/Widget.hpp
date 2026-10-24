@@ -19,6 +19,7 @@ namespace GEUI {
     /** @brief Node of UI tree
      */
     struct Widget {
+        std::string name;
         Vector2 anchor{};
         Vector2 pivot{};
         Vector2 offset{};

@@ -1,15 +1,41 @@
 #include "Tree/Canvas.hpp"
 
 #include <algorithm>
+#include <cstdint>
+#include <format>
+#include <memory>
 
 #include "Backend/TextureProvider.hpp"
+#include "Log.hpp"
 #include "Tree/Layout.hpp"
+#include "Tree/Name.hpp"
 
 namespace GEUI {
     namespace {
         bool Contains(const Rect& _rect, const Vector2& _point) {
             return _point.x >= _rect.min.x && _point.x < _rect.min.x + _rect.size.x
                 && _point.y >= _rect.min.y && _point.y < _rect.min.y + _rect.size.y;
+        }
+
+        Widget* FindChild(Widget& _parent, std::string_view _name) {
+            for (const auto& child : _parent.children) {
+                if (child->name == _name) {
+                    return child.get();
+                }
+            }
+            return nullptr;
+        }
+
+        void FindAll(Widget& _widget, std::string_view _name, Widget*& _first, uint32_t& _count) {
+            for (const auto& child : _widget.children) {
+                if (child->name == _name) {
+                    if (_first == nullptr) {
+                        _first = child.get();
+                    }
+                    ++_count;
+                }
+                FindAll(*child, _name, _first, _count);
+            }
         }
     }
 
@@ -19,6 +45,43 @@ namespace GEUI {
 
     Widget& Canvas::GetRoot() {
         return root_;
+    }
+
+    const Widget& Canvas::GetRoot() const {
+        return root_;
+    }
+
+    Widget& Canvas::Create(Widget& _parent, std::string_view _name) {
+        auto widget = std::make_unique<Widget>();
+        widget->name = _name;
+        _parent.children.push_back(std::move(widget));
+
+        Widget& created = *_parent.children.back();
+        CheckName(_parent, created);
+        FillNames(root_);
+        return created;
+    }
+
+    Widget* Canvas::Find(std::string_view _path) {
+        Widget* widget = &root_;
+        while (widget != nullptr && !_path.empty()) {
+            const size_t separator = _path.find('/');
+            widget = FindChild(*widget, _path.substr(0, separator));
+            _path = separator == std::string_view::npos ? std::string_view() : _path.substr(separator + 1);
+        }
+        return widget == &root_ ? nullptr : widget;
+    }
+
+    Widget* Canvas::FindAny(std::string_view _name) {
+        Widget* first = nullptr;
+        uint32_t count = 0;
+        FindAll(root_, _name, first, count);
+
+        // 兄弟の外では重複を許すので、どれが返るかは並び順で決まる
+        if (count > 1) {
+            Log(std::format("'{}' matches {} widgets", _name, count));
+        }
+        return first;
     }
 
     Rect Canvas::GetReferenceRect() const {

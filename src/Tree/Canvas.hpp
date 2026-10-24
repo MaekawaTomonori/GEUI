@@ -1,6 +1,7 @@
 #ifndef GEUI_CANVAS_HPP_
 #define GEUI_CANVAS_HPP_
 
+#include <string_view>
 #include <vector>
 
 #include "Render/Instance.hpp"
@@ -28,6 +29,30 @@ namespace GEUI {
          * @return root
          */
         Widget& GetRoot();
+
+        /** @brief Get root widget
+         * @return root
+         */
+        const Widget& GetRoot() const;
+
+        /** @brief Create widget
+         * @param _parent 追加する先の親
+         * @param _name 名前（空なら自動で付ける）
+         * @return widget
+         */
+        Widget& Create(Widget& _parent, std::string_view _name = {});
+
+        /** @brief Find widget by path
+         * @param _path ルートからの名前を '/' で区切ったもの
+         * @return widget
+         */
+        Widget* Find(std::string_view _path);
+
+        /** @brief Find descendant by name
+         * @param _name 名前
+         * @return widget
+         */
+        Widget* FindAny(std::string_view _name);
 
         /** @brief Get reference rectangle
          * @return referenceRect

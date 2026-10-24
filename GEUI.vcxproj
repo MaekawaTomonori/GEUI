@@ -14,22 +14,29 @@
     <ClInclude Include="include\GEUI.hpp" />
     <ClInclude Include="include\Backend\Backend.hpp" />
     <ClInclude Include="include\Backend\TextureProvider.hpp" />
+    <ClInclude Include="libs\nlohmann\json.hpp" />
+    <ClInclude Include="src\Log.hpp" />
     <ClInclude Include="src\Render\Instance.hpp" />
     <ClInclude Include="src\Render\Renderer.hpp" />
     <ClInclude Include="src\Render\ShaderLoader.hpp" />
     <ClInclude Include="src\Tree\Canvas.hpp" />
+    <ClInclude Include="src\Tree\CanvasFile.hpp" />
     <ClInclude Include="src\Tree\CanvasStack.hpp" />
     <ClInclude Include="src\Tree\Layout.hpp" />
+    <ClInclude Include="src\Tree\Name.hpp" />
     <ClInclude Include="src\Tree\Widget.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEUI.cpp" />
+    <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\Backend\Backend.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />
     <ClCompile Include="src\Render\ShaderLoader.cpp" />
     <ClCompile Include="src\Tree\Canvas.cpp" />
+    <ClCompile Include="src\Tree\CanvasFile.cpp" />
     <ClCompile Include="src\Tree\CanvasStack.cpp" />
     <ClCompile Include="src\Tree\Layout.cpp" />
+    <ClCompile Include="src\Tree\Name.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shaders\Quad.hlsli" />
@@ -90,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>_LIB;_DEBUG;_WINDOWS;_UNICODE;UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;GEUI_SHADER_SOURCE_DIRECTORY=L"$(GEUIShaderSourceDir)";GEUI_SHADER_CACHE_DIRECTORY=L"$(GEUIShaderCacheDir)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(GESTDDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)libs;$(GESTDDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -112,7 +119,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>_LIB;NDEBUG;_WINDOWS;_UNICODE;UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;GEUI_SHADER_SOURCE_DIRECTORY=L"$(GEUIShaderSourceDir)";GEUI_SHADER_CACHE_DIRECTORY=L"$(GEUIShaderCacheDir)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(GESTDDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)libs;$(GESTDDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>

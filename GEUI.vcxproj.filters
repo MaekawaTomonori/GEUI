@@ -19,6 +19,12 @@
     <Filter Include="src\Tree">
       <UniqueIdentifier>{B62E8D47-1A93-4C5F-8E07-5D3C9A1F64B2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs">
+      <UniqueIdentifier>{9C4F2A71-6E58-4B13-A7D2-1F8E5B30C964}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\nlohmann">
+      <UniqueIdentifier>{3A7E9D15-B42C-4F86-9E03-6D1C8A47F2B5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="resources">
       <UniqueIdentifier>{D19F4B62-8E37-4A05-B6C1-3F7E2A90C548}</UniqueIdentifier>
     </Filter>
@@ -36,6 +42,12 @@
     <ClInclude Include="include\Backend\TextureProvider.hpp">
       <Filter>include\Backend</Filter>
     </ClInclude>
+    <ClInclude Include="libs\nlohmann\json.hpp">
+      <Filter>libs\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Log.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\Render\Instance.hpp">
       <Filter>src\Render</Filter>
     </ClInclude>
@@ -48,10 +60,16 @@
     <ClInclude Include="src\Tree\Canvas.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>
+    <ClInclude Include="src\Tree\CanvasFile.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
     <ClInclude Include="src\Tree\CanvasStack.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>
     <ClInclude Include="src\Tree\Layout.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Tree\Name.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>
     <ClInclude Include="src\Tree\Widget.hpp">
@@ -60,6 +78,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEUI.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Log.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Backend\Backend.cpp">
@@ -74,10 +95,16 @@
     <ClCompile Include="src\Tree\Canvas.cpp">
       <Filter>src\Tree</Filter>
     </ClCompile>
+    <ClCompile Include="src\Tree\CanvasFile.cpp">
+      <Filter>src\Tree</Filter>
+    </ClCompile>
     <ClCompile Include="src\Tree\CanvasStack.cpp">
       <Filter>src\Tree</Filter>
     </ClCompile>
     <ClCompile Include="src\Tree\Layout.cpp">
+      <Filter>src\Tree</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tree\Name.cpp">
       <Filter>src\Tree</Filter>
     </ClCompile>
   </ItemGroup>
