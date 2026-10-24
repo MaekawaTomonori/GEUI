@@ -1,122 +1,15 @@
 #include "Backend/Backend.hpp"
 
-#include <filesystem>
-#include <format>
 #include <memory>
-#include <string_view>
-#include <system_error>
 #include <utility>
 
 #include <Windows.h>
 
-#include "Log.hpp"
 #include "Render/Renderer.hpp"
 #include "Render/ShaderLoader.hpp"
-#include "Tree/CanvasFile.hpp"
 #include "Tree/CanvasStack.hpp"
-#include "Tree/Layout.hpp"
 
 namespace GEUI {
-    namespace {
-        constexpr Vector2 REFERENCE_SIZE = { 1280.0f, 720.0f };
-
-        // 確認用の状態。公開ヘッダに出さないためここに置く
-        Canvas* testPause = nullptr;
-
-        Widget& AddWidget(Canvas& _canvas, Widget& _parent, const Rect& _parentRect, const Rect& _rect, const Vector4& _color, std::string_view _name = {}, const char* _image = "") {
-            Widget& widget = _canvas.Create(_parent, _name);
-            Place(widget, _rect, _parentRect);
-            widget.color = _color;
-            widget.image = _image;
-            return widget;
-        }
-
-        void BuildTestHud(Canvas& _canvas) {
-            Widget& root = _canvas.GetRoot();
-            const Rect screen = _canvas.GetReferenceRect();
-
-            // 左上: 背景 → 画像 → 半透明の重なりの順で描かれること
-            const Rect panel = { { 40.0f, 40.0f }, { 320.0f, 160.0f } };
-            Widget& panelWidget = AddWidget(_canvas, root, screen, panel, { 1.0f, 0.0f, 0.0f, 1.0f }, "Panel");
-            AddWidget(_canvas, panelWidget, panel, { { 60.0f, 60.0f }, { 120.0f, 120.0f } }, { 1.0f, 1.0f, 1.0f, 1.0f }, "Image", "uvChecker.png");
-            AddWidget(_canvas, panelWidget, panel, { { 140.0f, 100.0f }, { 200.0f, 80.0f } }, { 0.0f, 0.0f, 1.0f, 0.5f }, "Overlay");
-
-            // 上の中央・中央・右下: それぞれの基準点に付いていくこと。名前は自動で付ける
-            AddWidget(_canvas, root, screen, { { 540.0f, 20.0f }, { 200.0f, 40.0f } }, { 1.0f, 1.0f, 0.0f, 1.0f });
-            AddWidget(_canvas, root, screen, { { 560.0f, 300.0f }, { 160.0f, 120.0f } }, { 1.0f, 1.0f, 1.0f, 0.8f });
-
-            // 右下: Pause の表示中はクリックしても水色にならないこと
-            Widget& corner = AddWidget(_canvas, root, screen, { { 1000.0f, 560.0f }, { 240.0f, 120.0f } }, { 0.0f, 1.0f, 0.0f, 1.0f }, "Corner");
-            corner.selectable = true;
-            corner.selectedColor = { 0.0f, 1.0f, 1.0f, 1.0f };
-        }
-
-        void BuildTestPause(Canvas& _canvas) {
-            Widget& root = _canvas.GetRoot();
-            const Rect screen = _canvas.GetReferenceRect();
-
-            // 描画先が sRGB なので、0.5 では暗さがほとんど分からない
-            AddWidget(_canvas, root, screen, screen, { 0.0f, 0.0f, 0.0f, 0.85f }, "Curtain");
-
-            const Rect panel = { { 440.0f, 210.0f }, { 400.0f, 300.0f } };
-            Widget& panelWidget = AddWidget(_canvas, root, screen, panel, { 0.3f, 0.3f, 0.3f, 1.0f }, "Panel");
-
-            // 左: 押した項目だけが黄色になること
-            constexpr std::string_view ITEMS[] = { "Resume", "Retry", "Quit" };
-            for (int i = 0; i < 3; ++i) {
-                const float top = 230.0f + 90.0f * static_cast<float>(i);
-                Widget& item = AddWidget(_canvas, panelWidget, panel, { { 460.0f, top }, { 160.0f, 70.0f } }, { 0.6f, 0.6f, 0.6f, 1.0f }, ITEMS[i]);
-                item.selectable = true;
-                item.selectedColor = { 1.0f, 0.8f, 0.0f, 1.0f };
-            }
-
-            // 右: 押したパネルが手前に来ること。左の項目は位置が変わらないこと
-            AddWidget(_canvas, panelWidget, panel, { { 640.0f, 240.0f }, { 150.0f, 120.0f } }, { 1.0f, 0.3f, 0.3f, 1.0f }, "Red").raisable = true;
-            AddWidget(_canvas, panelWidget, panel, { { 670.0f, 330.0f }, { 150.0f, 120.0f } }, { 0.3f, 0.5f, 1.0f, 1.0f }, "Blue").raisable = true;
-        }
-
-        void BuildTestHidden(Canvas& _canvas) {
-            AddWidget(_canvas, _canvas.GetRoot(), _canvas.GetReferenceRect(), _canvas.GetReferenceRect(), { 1.0f, 0.0f, 1.0f, 1.0f });
-        }
-
-        // ファイルが無ければコードで組み立てて書き出し、次の起動からはファイルを読む
-        Canvas& LoadTestCanvas(CanvasStack& _canvases, const char* _path, int _order, bool _visible, bool _blockInput, void (*_build)(Canvas&)) {
-            Canvas& canvas = _canvases.Add(REFERENCE_SIZE);
-            // 読めなかったときに書き直すと、手で直した内容が消えるので書き出さない
-            std::error_code error;
-            if (std::filesystem::exists(_path, error)) {
-                LoadCanvas(_path, canvas);
-            } else {
-                canvas.SetOrder(_order);
-                canvas.SetVisible(_visible);
-                canvas.SetBlockInput(_blockInput);
-                _build(canvas);
-                SaveCanvas(_path, canvas);
-            }
-            return canvas;
-        }
-
-        void CheckFind(Canvas& _canvas, std::string_view _path, bool _any) {
-            const Widget* widget = _any ? _canvas.FindAny(_path) : _canvas.Find(_path);
-            Log(std::format("{}(\"{}\") {}", _any ? "FindAny" : "Find", _path, widget != nullptr ? "found" : "not found"));
-        }
-
-        // 描画と入力の確認用。Editor ができたら削除する
-        void BuildTestCanvases(CanvasStack& _canvases) {
-            // 並べ替えを確かめるため、手前のものから追加する
-            Canvas& pause = LoadTestCanvas(_canvases, "Assets/UI/TestPause.json", 100, true, true, BuildTestPause);
-            testPause = &pause;
-            LoadTestCanvas(_canvases, "Assets/UI/TestHidden.json", 50, false, false, BuildTestHidden);
-            Canvas& hud = LoadTestCanvas(_canvases, "Assets/UI/TestHud.json", 0, true, false, BuildTestHud);
-
-            CheckFind(pause, "Panel/Resume", false);
-            CheckFind(pause, "Resume", false);
-            CheckFind(pause, "Quit", true);
-            CheckFind(hud, "Panel/Image", false);
-            CheckFind(hud, "Widget_02", true);
-        }
-    }
-
     Backend::Backend() = default;
     Backend::~Backend() = default;
 
@@ -133,11 +26,8 @@ namespace GEUI {
             return false;
         }
 
-        auto canvases = std::make_unique<CanvasStack>();
-        BuildTestCanvases(*canvases);
-
         renderer_ = std::move(renderer);
-        canvases_ = std::move(canvases);
+        canvases_ = std::make_unique<Tree::CanvasStack>();
         textures_ = _textures;
         Resize(_width, _height);
         return true;
@@ -166,7 +56,7 @@ namespace GEUI {
         if (canvases_ == nullptr) {
             return false;
         }
-        if (_message != WM_MOUSEMOVE && _message != WM_LBUTTONDOWN && _message != WM_RBUTTONDOWN) {
+        if (_message != WM_MOUSEMOVE && _message != WM_LBUTTONDOWN) {
             return false;
         }
 
@@ -196,10 +86,6 @@ namespace GEUI {
             return pointerOver_;
         }
 
-        // 入力の確認用。Pause の表示を切り替える
-        if (_message == WM_RBUTTONDOWN && testPause != nullptr) {
-            testPause->SetVisible(!testPause->IsVisible());
-        }
         pointerOver_ = canvases_->HitTest(point);
         return false;
     }
@@ -217,8 +103,11 @@ namespace GEUI {
         return pointerOver_;
     }
 
+    Tree::CanvasStack* Backend::GetCanvases() {
+        return canvases_.get();
+    }
+
     void Backend::Teardown() {
-        testPause = nullptr;
         canvases_.reset();
         renderer_.reset();
         textures_ = nullptr;

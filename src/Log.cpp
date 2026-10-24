@@ -6,7 +6,7 @@
 
 namespace GEUI {
     void Log(std::string_view _message) {
-        const std::string text = "GEUI: " + std::string(_message) + "\n";
+        const std::string text = "[GEUI] : " + std::string(_message) + "\n";
 
         // パスに日本語が入っても化けないよう、ワイド文字で出す
         const int length = MultiByteToWideChar(CP_UTF8, 0, text.data(), static_cast<int>(text.size()), nullptr, 0);

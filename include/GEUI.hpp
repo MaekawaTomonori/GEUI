@@ -4,6 +4,8 @@
 #include <cstdint>
 
 #include "Backend/Backend.hpp"
+#include "Canvas.hpp"
+#include "Widget.hpp"
 
 /**
  * @brief GEUI: DirectX12 向けのリテインド型UIライブラリ

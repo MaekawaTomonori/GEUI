@@ -12,7 +12,9 @@ struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
 
 namespace GEUI {
-    class CanvasStack;
+    namespace Tree {
+        class CanvasStack;
+    }
     class Renderer;
 
     /** @brief Rectangle in client coordinates
@@ -26,7 +28,7 @@ namespace GEUI {
 
     class Backend {
         std::unique_ptr<Renderer> renderer_;
-        std::unique_ptr<CanvasStack> canvases_;
+        std::unique_ptr<Tree::CanvasStack> canvases_;
         TextureProvider* textures_ = nullptr;
         uint32_t width_ = 0;
         uint32_t height_ = 0;
@@ -80,6 +82,11 @@ namespace GEUI {
          * @return over
          */
         bool IsPointerOver() const;
+
+        /** @brief Get canvases
+         * @return canvases
+         */
+        Tree::CanvasStack* GetCanvases();
 
         /** @brief Release
          */

@@ -10,103 +10,93 @@
 namespace GEUI {
     class TextureProvider;
 
-    /** @brief Root of UI tree
-     */
-    class Canvas {
-        Vector2 referenceSize_{};
-        Widget root_;
-        int order_ = 0;
-        bool visible_ = true;
-        bool blockInput_ = false;
-
-    public:
-        /** @brief Initialize
-         * @param _referenceSize 基準解像度
+    namespace Tree {
+        /** @brief Root of UI tree
          */
-        void Setup(const Vector2& _referenceSize);
+        class Canvas {
+            Vector2 referenceSize_{};
+            Widget root_;
+            int order_ = 0;
+            bool visible_ = true;
+            bool blockInput_ = false;
 
-        /** @brief Get root widget
-         * @return root
-         */
-        Widget& GetRoot();
+        public:
+            /** @brief Initialize
+             * @param _referenceSize 基準解像度
+             */
+            void Setup(const Vector2& _referenceSize);
 
-        /** @brief Get root widget
-         * @return root
-         */
-        const Widget& GetRoot() const;
+            /** @brief Get root widget
+             * @return root
+             */
+            Widget& GetRoot();
 
-        /** @brief Create widget
-         * @param _parent 追加する先の親
-         * @param _name 名前（空なら自動で付ける）
-         * @return widget
-         */
-        Widget& Create(Widget& _parent, std::string_view _name = {});
+            /** @brief Get root widget
+             * @return root
+             */
+            const Widget& GetRoot() const;
 
-        /** @brief Find widget by path
-         * @param _path ルートからの名前を '/' で区切ったもの
-         * @return widget
-         */
-        Widget* Find(std::string_view _path);
+            /** @brief Create widget
+             * @param _parent 追加する先の親
+             * @param _name 名前（空なら自動で付ける）
+             * @return widget
+             */
+            Widget& Create(Widget& _parent, std::string_view _name = {});
 
-        /** @brief Find descendant by name
-         * @param _name 名前
-         * @return widget
-         */
-        Widget* FindAny(std::string_view _name);
+            /** @brief Get reference rectangle
+             * @return referenceRect
+             */
+            Rect GetReferenceRect() const;
 
-        /** @brief Get reference rectangle
-         * @return referenceRect
-         */
-        Rect GetReferenceRect() const;
+            /** @brief Set order
+             * @param _order 前後の順番（大きいほど手前）
+             */
+            void SetOrder(int _order);
 
-        /** @brief Set order
-         * @param _order 前後の順番（大きいほど手前）
-         */
-        void SetOrder(int _order);
+            /** @brief Get order
+             * @return order
+             */
+            int GetOrder() const;
 
-        /** @brief Get order
-         * @return order
-         */
-        int GetOrder() const;
+            /** @brief Set visibility
+             * @param _visible 表示するか
+             */
+            void SetVisible(bool _visible);
 
-        /** @brief Set visibility
-         * @param _visible 表示するか
-         */
-        void SetVisible(bool _visible);
+            /** @brief Get visibility
+             * @return visible
+             */
+            bool IsVisible() const;
 
-        /** @brief Get visibility
-         * @return visible
-         */
-        bool IsVisible() const;
+            /** @brief Set input blocking
+             * @param _block 当たらなくても後ろへ入力を通さないか
+             */
+            void SetBlockInput(bool _block);
 
-        /** @brief Set input blocking
-         * @param _block 当たらなくても後ろへ入力を通さないか
-         */
-        void SetBlockInput(bool _block);
+            /** @brief Get input blocking
+             * @return blocking
+             */
+            bool IsBlockingInput() const;
 
-        /** @brief Get input blocking
-         * @return blocking
-         */
-        bool IsBlockingInput() const;
+            /** @brief Build instances
+             * @param _screenSize 描画先のサイズ
+             * @param _textures テクスチャの解決先
+             * @param _instances 書き足す先
+             */
+            void Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances);
 
-        /** @brief Build instances
-         * @param _screenSize 描画先のサイズ
-         * @param _textures テクスチャの解決先
-         * @param _instances 書き足す先
-         */
-        void Build(const Vector2& _screenSize, TextureProvider& _textures, std::vector<Instance>& _instances);
+            /** @brief Hit test
+             * @param _point 描画先の座標
+             * @param _path ルートから当たった Widget までの経路
+             * @return hit
+             */
+            bool HitTest(const Vector2& _point, std::vector<Widget*>& _path);
 
-        /** @brief Hit test
-         * @param _point 描画先の座標
-         * @param _path ルートから当たった Widget までの経路
-         * @return hit
-         */
-        bool HitTest(const Vector2& _point, std::vector<Widget*>& _path);
-
-    private:
-        void Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, std::vector<Instance>& _instances);
-        bool HitTest(Widget& _widget, const Vector2& _point, std::vector<Widget*>& _path);
-    };
+        private:
+            void Append(Widget& _widget, const Rect& _parent, float _scale, TextureProvider& _textures, std::vector<Instance>& _instances);
+            bool HitTest(Widget& _widget, const Vector2& _point, std::vector<Widget*>& _path);
+        };
+    }
 }
 
 #endif // GEUI_CANVAS_HPP_

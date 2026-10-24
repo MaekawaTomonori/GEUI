@@ -42,8 +42,20 @@
     <ClInclude Include="include\Backend\TextureProvider.hpp">
       <Filter>include\Backend</Filter>
     </ClInclude>
+    <ClInclude Include="include\Canvas.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="libs\nlohmann\json.hpp">
       <Filter>libs\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Current.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Key.hpp">
+      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Log.hpp">
       <Filter>src</Filter>
@@ -78,6 +90,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEUI.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Handle.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Log.cpp">

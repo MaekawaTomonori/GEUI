@@ -14,7 +14,11 @@
     <ClInclude Include="include\GEUI.hpp" />
     <ClInclude Include="include\Backend\Backend.hpp" />
     <ClInclude Include="include\Backend\TextureProvider.hpp" />
+    <ClInclude Include="include\Canvas.hpp" />
+    <ClInclude Include="include\Widget.hpp" />
     <ClInclude Include="libs\nlohmann\json.hpp" />
+    <ClInclude Include="src\Current.hpp" />
+    <ClInclude Include="src\Key.hpp" />
     <ClInclude Include="src\Log.hpp" />
     <ClInclude Include="src\Render\Instance.hpp" />
     <ClInclude Include="src\Render\Renderer.hpp" />
@@ -28,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEUI.cpp" />
+    <ClCompile Include="src\Handle.cpp" />
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\Backend\Backend.cpp" />
     <ClCompile Include="src\Render\Renderer.cpp" />

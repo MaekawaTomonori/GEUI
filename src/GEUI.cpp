@@ -1,9 +1,15 @@
 #include "GEUI.hpp"
 
+#include "Current.hpp"
+
 namespace GEUI {
     namespace {
-        // ホストの WndProc から呼ばれるため、インスタンスを渡さずに辿れるようにする
+        // ホストの WndProc やハンドルから呼ばれるため、インスタンスを渡さずに辿れるようにする
         Backend* current = nullptr;
+    }
+
+    Tree::CanvasStack* GetCurrentCanvases() {
+        return current != nullptr ? current->GetCanvases() : nullptr;
     }
 
     bool System::Setup(ID3D12Device* _device, DXGI_FORMAT _rtvFormat, uint32_t _width, uint32_t _height, TextureProvider* _textures) {
