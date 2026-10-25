@@ -33,6 +33,14 @@ namespace GEUI {
             float scale = 1.0f;
         };
 
+        /** @brief Image parameters
+         */
+        struct ImageStyle {
+            std::string name;
+            // 画像に対する割合の左上と大きさ（x, y, w, h）
+            Vector4 region{ 0.0f, 0.0f, 1.0f, 1.0f };
+        };
+
         /** @brief Alignment in rectangle
          */
         enum class TextAlign : uint8_t { Start, Center, End };

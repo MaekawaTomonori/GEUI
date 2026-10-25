@@ -469,8 +469,10 @@ namespace GEUI {
 
             if (DebugWidgets::BeginGroup("Appearance")) {
                 DebugWidgets::ColorEdit4("Color", &_widget.color.x);
-                if (std::string* image = _canvas.GetImage(_widget)) {
-                    DrawImage(_textures, *image);
+                if (Tree::ImageStyle* image = _canvas.GetImage(_widget)) {
+                    DrawImage(_textures, image->name);
+                    DebugWidgets::DragFloat2("Region", &image->region.x, 0.001f, 0.0f, 1.0f);
+                    DebugWidgets::DragFloat2("Region Size", &image->region.z, 0.001f, 0.0f, 1.0f, "WH");
                 }
                 DebugWidgets::EndGroup();
             }

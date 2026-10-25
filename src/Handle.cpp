@@ -78,12 +78,37 @@ namespace GEUI {
         if (widget == nullptr) {
             return;
         }
-        std::string* image = GetOwner(id_)->GetImage(*widget);
+        Tree::ImageStyle* image = GetOwner(id_)->GetImage(*widget);
         if (image == nullptr) {
             Log(std::format("SetImage on '{}' which is not an image", widget->name));
             return;
         }
-        *image = _image;
+        image->name = _image;
+    }
+
+    void Widget::SetImageRegion(const Vector2& _min, const Vector2& _size) {
+        Tree::Widget* widget = GetWidget(id_, "SetImageRegion");
+        if (widget == nullptr) {
+            return;
+        }
+        Tree::ImageStyle* image = GetOwner(id_)->GetImage(*widget);
+        if (image == nullptr) {
+            Log(std::format("SetImageRegion on '{}' which is not an image", widget->name));
+            return;
+        }
+        image->region = { _min.x, _min.y, _size.x, _size.y };
+    }
+
+    void Widget::SetOffset(const Vector2& _offset) {
+        if (Tree::Widget* widget = GetWidget(id_, "SetOffset")) {
+            widget->offset = _offset;
+        }
+    }
+
+    void Widget::SetSize(const Vector2& _size) {
+        if (Tree::Widget* widget = GetWidget(id_, "SetSize")) {
+            widget->size = _size;
+        }
     }
 
     void Widget::SetText(std::string_view _text) {
@@ -169,6 +194,12 @@ namespace GEUI {
     void Canvas::SetBlockInput(bool _block) {
         if (Tree::Canvas* canvas = GetCanvas(id_, "SetBlockInput")) {
             canvas->SetBlockInput(_block);
+        }
+    }
+
+    void Canvas::SetAlpha(float _alpha) {
+        if (Tree::Canvas* canvas = GetCanvas(id_, "SetAlpha")) {
+            canvas->SetAlpha(_alpha);
         }
     }
 

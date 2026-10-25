@@ -20,10 +20,11 @@ namespace GEUI {
             std::filesystem::path path_;
             Vector2 referenceSize_{};
             Widget root_;
-            Pool<std::string> images_;
+            Pool<ImageStyle> images_;
             Pool<TextStyle> texts_;
             Pool<StateStyle> states_;
             Widget* pressed_ = nullptr;
+            float alpha_ = 1.0f;
             int order_ = 0;
             bool visible_ = true;
             bool blockInput_ = false;
@@ -73,17 +74,17 @@ namespace GEUI {
              */
             void Release(Widget& _widget);
 
-            /** @brief Get image name
+            /** @brief Get image parameters
              * @param _widget 対象
              * @return image
              */
-            std::string* GetImage(const Widget& _widget);
+            ImageStyle* GetImage(const Widget& _widget);
 
-            /** @brief Get image name
+            /** @brief Get image parameters
              * @param _widget 対象
              * @return image
              */
-            const std::string* GetImage(const Widget& _widget) const;
+            const ImageStyle* GetImage(const Widget& _widget) const;
 
             /** @brief Get text parameters
              * @param _widget 対象
@@ -187,6 +188,11 @@ namespace GEUI {
              * @return blocking
              */
             bool IsBlockingInput() const;
+
+            /** @brief Set opacity of whole canvas
+             * @param _alpha 不透明度
+             */
+            void SetAlpha(float _alpha);
 
             /** @brief Build instances
              * @param _screenSize 描画先のサイズ

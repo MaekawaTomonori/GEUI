@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string_view>
 
+#include "Math/Vector2.hpp"
 #include "Math/Vector4.hpp"
 
 namespace GEUI {
@@ -60,6 +61,22 @@ namespace GEUI {
          * @param _image 画像名
          */
         void SetImage(std::string_view _image);
+
+        /** @brief Set drawn part of image
+         * @param _min 左上（画像に対する割合）
+         * @param _size 大きさ（画像に対する割合）
+         */
+        void SetImageRegion(const Vector2& _min, const Vector2& _size);
+
+        /** @brief Set offset
+         * @param _offset 位置（親に対する割合）
+         */
+        void SetOffset(const Vector2& _offset);
+
+        /** @brief Set size
+         * @param _size 大きさ（親に対する割合）
+         */
+        void SetSize(const Vector2& _size);
 
         /** @brief Set text
          * @param _text 文字列

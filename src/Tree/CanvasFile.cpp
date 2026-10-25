@@ -178,8 +178,9 @@ namespace GEUI {
                     widget.raisable = ReadFlag(item, "raisable", widget.raisable);
 
                     _canvas.SetType(widget, ReadType(item));
-                    if (std::string* image = _canvas.GetImage(widget)) {
-                        Read(item, "image", *image);
+                    if (ImageStyle* image = _canvas.GetImage(widget)) {
+                        Read(item, "image", image->name);
+                        Read(item, "region", image->region);
                     }
                     if (TextStyle* text = _canvas.GetText(widget)) {
                         ReadText(item, *text);
@@ -217,8 +218,9 @@ namespace GEUI {
                             { "scale", style->scale },
                         };
                     }
-                    if (const std::string* image = _canvas.GetImage(*child)) {
-                        item["image"] = *image;
+                    if (const ImageStyle* image = _canvas.GetImage(*child)) {
+                        item["image"] = image->name;
+                        item["region"] = Write(image->region);
                     }
                     if (const TextStyle* text = _canvas.GetText(*child)) {
                         WriteText(item, *text);

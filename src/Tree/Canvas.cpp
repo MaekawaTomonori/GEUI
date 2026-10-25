@@ -90,11 +90,11 @@ namespace GEUI {
             }
         }
 
-        std::string* Canvas::GetImage(const Widget& _widget) {
+        ImageStyle* Canvas::GetImage(const Widget& _widget) {
             return _widget.type == WidgetType::Image ? images_.Get(_widget.data) : nullptr;
         }
 
-        const std::string* Canvas::GetImage(const Widget& _widget) const {
+        const ImageStyle* Canvas::GetImage(const Widget& _widget) const {
             return _widget.type == WidgetType::Image ? images_.Get(_widget.data) : nullptr;
         }
 
@@ -238,6 +238,10 @@ namespace GEUI {
             return blockInput_;
         }
 
+        void Canvas::SetAlpha(float _alpha) {
+            alpha_ = _alpha;
+        }
+
         void Canvas::Build(const Vector2& _screenSize, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances) {
             // 文字の大きさは割合ではなく基準解像度の px で持つので、画面の高さに合わせて拡縮する
             const float scale = referenceSize_.y > 0.0f ? _screenSize.y / referenceSize_.y : 1.0f;
@@ -279,7 +283,8 @@ namespace GEUI {
             }
 
             // 透明な Widget は子をまとめる入れ物として使う
-            const Vector4& color = GetDrawColor(_widget);
+            Vector4 color = GetDrawColor(_widget);
+            color.w *= alpha_;
             if (_widget.type != WidgetType::Button && color.w > 0.0f) {
                 if (const TextStyle* text = GetText(_widget)) {
                     if (const Font* font = _fonts.Get(text->font)) {
@@ -287,8 +292,10 @@ namespace GEUI {
                     }
                 } else if (_widget.type != WidgetType::Text) {
                     Instance instance{ _widget.rect.min + _widget.rect.size * 0.5f, _widget.rect.size * 0.5f, color };
-                    if (const std::string* image = GetImage(_widget); image != nullptr && !image->empty()) {
-                        instance.texIndex = _textures.Resolve(*image);
+                    if (const ImageStyle* image = GetImage(_widget); image != nullptr && !image->name.empty()) {
+                        instance.texIndex = _textures.Resolve(image->name);
+                        const Vector4& region = image->region;
+                        instance.uvRect = { region.x, region.y, region.x + region.z, region.y + region.w };
                     }
                     _instances.push_back(instance);
                 }

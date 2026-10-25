@@ -57,6 +57,11 @@ namespace GEUI {
          */
         void SetBlockInput(bool _block);
 
+        /** @brief Set opacity of whole canvas
+         * @param _alpha 不透明度
+         */
+        void SetAlpha(float _alpha);
+
         /** @brief Find widget by path
          * @param _path パス
          * @return widget
