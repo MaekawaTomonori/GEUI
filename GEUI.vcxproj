@@ -36,6 +36,7 @@
     <ClInclude Include="src\Tree\CanvasStack.hpp" />
     <ClInclude Include="src\Tree\Layout.hpp" />
     <ClInclude Include="src\Tree\Name.hpp" />
+    <ClInclude Include="src\Tree\Pool.hpp" />
     <ClInclude Include="src\Tree\Widget.hpp" />
   </ItemGroup>
   <ItemGroup>

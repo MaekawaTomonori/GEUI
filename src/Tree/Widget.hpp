@@ -60,35 +60,27 @@ namespace GEUI {
 
         /** @brief Node of UI tree
          */
+        // 大量に作るので、全ての Widget が使う項目だけを持つ。種類ごとの中身とオプションは Canvas が持ち、番号で引く
         struct Widget {
             std::string name;
-            WidgetType type = WidgetType::Quad;
+            std::vector<std::unique_ptr<Widget>> children;
             Vector2 anchor{};
             Vector2 pivot{};
             Vector2 offset{};
             Vector2 size{};
             Vector4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
-            StateStyle selectedStyle;
-            std::string image;
-            TextStyle text;
-            bool visible = true;
-            bool selectable = false;
-            bool selected = false;
-            bool followState = false;
-            bool raisable = false;
-            std::vector<std::unique_ptr<Widget>> children;
             Rect rect{};
-            bool drawnSelected = false;
             uint32_t id = 0;
+            uint32_t data = 0;
+            uint32_t selectedStyle = 0;
+            WidgetType type = WidgetType::Quad;
+            bool visible : 1 = true;
+            bool selectable : 1 = false;
+            bool selected : 1 = false;
+            bool followState : 1 = false;
+            bool raisable : 1 = false;
+            bool drawnSelected : 1 = false;
         };
-
-        /** @brief Get color to draw
-         * @param _widget 対象
-         * @return color
-         */
-        inline const Vector4& GetDrawColor(const Widget& _widget) {
-            return _widget.drawnSelected ? _widget.selectedStyle.color : _widget.color;
-        }
     }
 }
 

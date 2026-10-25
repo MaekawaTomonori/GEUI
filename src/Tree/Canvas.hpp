@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Render/Instance.hpp"
+#include "Tree/Pool.hpp"
 #include "Tree/Widget.hpp"
 
 namespace GEUI {
@@ -19,6 +20,9 @@ namespace GEUI {
             std::filesystem::path path_;
             Vector2 referenceSize_{};
             Widget root_;
+            Pool<std::string> images_;
+            Pool<TextStyle> texts_;
+            Pool<StateStyle> states_;
             int order_ = 0;
             bool visible_ = true;
             bool blockInput_ = false;
@@ -56,6 +60,64 @@ namespace GEUI {
              * @return widget
              */
             Widget& Create(Widget& _parent, WidgetType _type, std::string_view _name = {});
+
+            /** @brief Change type
+             * @param _widget 対象
+             * @param _type 種類
+             */
+            void SetType(Widget& _widget, WidgetType _type);
+
+            /** @brief Release data of widget and descendants
+             * @param _widget 対象
+             */
+            void Release(Widget& _widget);
+
+            /** @brief Get image name
+             * @param _widget 対象
+             * @return image
+             */
+            std::string* GetImage(const Widget& _widget);
+
+            /** @brief Get image name
+             * @param _widget 対象
+             * @return image
+             */
+            const std::string* GetImage(const Widget& _widget) const;
+
+            /** @brief Get text parameters
+             * @param _widget 対象
+             * @return text
+             */
+            TextStyle* GetText(const Widget& _widget);
+
+            /** @brief Get text parameters
+             * @param _widget 対象
+             * @return text
+             */
+            const TextStyle* GetText(const Widget& _widget) const;
+
+            /** @brief Get selected appearance
+             * @param _widget 対象
+             * @return style
+             */
+            StateStyle* GetSelectedStyle(const Widget& _widget);
+
+            /** @brief Get selected appearance
+             * @param _widget 対象
+             * @return style
+             */
+            const StateStyle* GetSelectedStyle(const Widget& _widget) const;
+
+            /** @brief Add selected appearance
+             * @param _widget 対象
+             * @return style
+             */
+            StateStyle& AddSelectedStyle(Widget& _widget);
+
+            /** @brief Remove selected appearance
+             * @param _widget 対象
+             */
+            void RemoveSelectedStyle(Widget& _widget);
 
             /** @brief Get reference rectangle
              * @return referenceRect
@@ -110,6 +172,9 @@ namespace GEUI {
         private:
             void Append(Widget& _widget, const Rect& _parent, float _scale, bool _parentSelected, TextureProvider& _textures, FontCache& _fonts, std::vector<Instance>& _instances);
             bool HitTest(Widget& _widget, const Vector2& _point, std::vector<Widget*>& _path);
+            const Vector4& GetDrawColor(const Widget& _widget) const;
+            void AddData(Widget& _widget);
+            void RemoveData(Widget& _widget);
         };
     }
 }

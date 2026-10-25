@@ -16,11 +16,6 @@ namespace GEUI {
                     && _point.y >= _rect.min.y && _point.y < _rect.min.y + _rect.size.y;
             }
 
-            // Button は何も描かないが、押す対象なので当たる
-            bool IsHittable(const Widget& _widget) {
-                return _widget.type == WidgetType::Button || GetDrawColor(_widget).w > 0.0f;
-            }
-
             Rect ApplyStyle(const Rect& _rect, const Vector2& _pivot, const StateStyle& _style, const Rect& _parent) {
                 const Vector2 pivotPoint = _rect.min + _rect.size * _pivot + _parent.size * _style.shift;
                 const Vector2 size = _rect.size * _style.scale;
@@ -51,13 +46,63 @@ namespace GEUI {
         Widget& Canvas::Create(Widget& _parent, WidgetType _type, std::string_view _name) {
             auto widget = std::make_unique<Widget>();
             widget->name = _name;
-            widget->type = _type;
             _parent.children.push_back(std::move(widget));
 
             Widget& created = *_parent.children.back();
+            SetType(created, _type);
             CheckName(_parent, created);
             FillNames(root_);
             return created;
+        }
+
+        void Canvas::SetType(Widget& _widget, WidgetType _type) {
+            RemoveData(_widget);
+            _widget.type = _type;
+            AddData(_widget);
+        }
+
+        void Canvas::Release(Widget& _widget) {
+            RemoveData(_widget);
+            states_.Remove(_widget.selectedStyle);
+            for (const auto& child : _widget.children) {
+                Release(*child);
+            }
+        }
+
+        std::string* Canvas::GetImage(const Widget& _widget) {
+            return _widget.type == WidgetType::Image ? images_.Get(_widget.data) : nullptr;
+        }
+
+        const std::string* Canvas::GetImage(const Widget& _widget) const {
+            return _widget.type == WidgetType::Image ? images_.Get(_widget.data) : nullptr;
+        }
+
+        TextStyle* Canvas::GetText(const Widget& _widget) {
+            return _widget.type == WidgetType::Text ? texts_.Get(_widget.data) : nullptr;
+        }
+
+        const TextStyle* Canvas::GetText(const Widget& _widget) const {
+            return _widget.type == WidgetType::Text ? texts_.Get(_widget.data) : nullptr;
+        }
+
+        StateStyle* Canvas::GetSelectedStyle(const Widget& _widget) {
+            return states_.Get(_widget.selectedStyle);
+        }
+
+        const StateStyle* Canvas::GetSelectedStyle(const Widget& _widget) const {
+            return states_.Get(_widget.selectedStyle);
+        }
+
+        StateStyle& Canvas::AddSelectedStyle(Widget& _widget) {
+            if (_widget.selectedStyle == 0) {
+                // 選択中の色の初期値は通常の色にして、付けた直後に見た目が変わらないようにする
+                _widget.selectedStyle = states_.Add({ _widget.color });
+            }
+            return *states_.Get(_widget.selectedStyle);
+        }
+
+        void Canvas::RemoveSelectedStyle(Widget& _widget) {
+            states_.Remove(_widget.selectedStyle);
         }
 
         Rect Canvas::GetReferenceRect() const {
@@ -123,22 +168,22 @@ namespace GEUI {
             _widget.rect = Resolve(_widget, _parent);
             // 拡縮は子の文字にも掛け、中身ごと大きくなるようにする
             float scale = _scale;
-            if (_widget.drawnSelected) {
-                _widget.rect = ApplyStyle(_widget.rect, _widget.pivot, _widget.selectedStyle, _parent);
-                scale *= _widget.selectedStyle.scale;
+            if (const StateStyle* style = GetSelectedStyle(_widget); style != nullptr && _widget.drawnSelected) {
+                _widget.rect = ApplyStyle(_widget.rect, _widget.pivot, *style, _parent);
+                scale *= style->scale;
             }
 
             // 透明な Widget は子をまとめる入れ物として使う
             const Vector4& color = GetDrawColor(_widget);
             if (_widget.type != WidgetType::Button && color.w > 0.0f) {
-                if (_widget.type == WidgetType::Text) {
-                    if (const Font* font = _fonts.Get(_widget.text.font)) {
-                        AppendText(_widget, *font, scale, _instances);
+                if (const TextStyle* text = GetText(_widget)) {
+                    if (const Font* font = _fonts.Get(text->font)) {
+                        AppendText(*text, _widget.rect, color, *font, scale, _instances);
                     }
-                } else {
+                } else if (_widget.type != WidgetType::Text) {
                     Instance instance{ _widget.rect.min + _widget.rect.size * 0.5f, _widget.rect.size * 0.5f, color };
-                    if (_widget.type == WidgetType::Image && !_widget.image.empty()) {
-                        instance.texIndex = _textures.Resolve(_widget.image);
+                    if (const std::string* image = GetImage(_widget); image != nullptr && !image->empty()) {
+                        instance.texIndex = _textures.Resolve(*image);
                     }
                     _instances.push_back(instance);
                 }
@@ -162,13 +207,47 @@ namespace GEUI {
                 }
             }
 
-            // 描かれていない入れ物には当たらない
-            if (IsHittable(_widget) && Contains(_widget.rect, _point)) {
+            // 描かれていない入れ物には当たらない。Button は何も描かないが、押す対象なので当たる
+            const bool hittable = _widget.type == WidgetType::Button || GetDrawColor(_widget).w > 0.0f;
+            if (hittable && Contains(_widget.rect, _point)) {
                 return true;
             }
 
             _path.pop_back();
             return false;
+        }
+
+        const Vector4& Canvas::GetDrawColor(const Widget& _widget) const {
+            const StateStyle* style = GetSelectedStyle(_widget);
+            return style != nullptr && _widget.drawnSelected ? style->color : _widget.color;
+        }
+
+        void Canvas::AddData(Widget& _widget) {
+            switch (_widget.type) {
+            case WidgetType::Image:
+                _widget.data = images_.Add();
+                break;
+            case WidgetType::Text:
+                _widget.data = texts_.Add();
+                break;
+            case WidgetType::Quad:
+            case WidgetType::Button:
+                break;
+            }
+        }
+
+        void Canvas::RemoveData(Widget& _widget) {
+            switch (_widget.type) {
+            case WidgetType::Image:
+                images_.Remove(_widget.data);
+                break;
+            case WidgetType::Text:
+                texts_.Remove(_widget.data);
+                break;
+            case WidgetType::Quad:
+            case WidgetType::Button:
+                break;
+            }
         }
     }
 }

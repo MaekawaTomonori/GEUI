@@ -85,7 +85,7 @@ namespace GEUI {
             }
 
             // type の無い古いファイルは、画像の有無で種類を決める
-            WidgetType ReadType(const Json& _json, const std::string& _image) {
+            WidgetType ReadType(const Json& _json) {
                 std::string name;
                 Read(_json, "type", name);
                 for (size_t i = 0; i < std::size(TYPE_NAMES); ++i) {
@@ -93,7 +93,15 @@ namespace GEUI {
                         return static_cast<WidgetType>(i);
                     }
                 }
-                return _image.empty() ? WidgetType::Quad : WidgetType::Image;
+                std::string image;
+                Read(_json, "image", image);
+                return image.empty() ? WidgetType::Quad : WidgetType::Image;
+            }
+
+            // ビットフィールドは参照で渡せないので、一度 bool で受ける
+            bool ReadFlag(const Json& _json, const char* _key, bool _value) {
+                Read(_json, _key, _value);
+                return _value;
             }
 
             void Read(const Json& _json, const char* _key, TextAlign& _value) {
@@ -126,19 +134,25 @@ namespace GEUI {
                 _json["alignY"] = static_cast<int>(_style.alignY);
             }
 
-            // 色だけを持っていた古いファイルは、selectedColor を色として読む
-            void ReadStyle(const Json& _json, StateStyle& _style) {
-                Read(_json, "selectedColor", _style.color);
+            // 色だけを持っていた古いファイルは、selectedColor を色として読む。選ばれ得ない Widget には作らない
+            void ReadStyle(const Json& _json, Canvas& _canvas, Widget& _widget) {
                 const auto it = _json.find("selectedStyle");
-                if (it == _json.end() || !it->is_object()) {
+                const bool hasStyle = it != _json.end() && it->is_object();
+                const bool hasColor = _json.contains("selectedColor") && (_widget.selectable || _widget.followState);
+                if (!hasStyle && !hasColor) {
                     return;
                 }
-                Read(*it, "color", _style.color);
-                Read(*it, "shift", _style.shift);
-                Read(*it, "scale", _style.scale);
+
+                StateStyle& style = _canvas.AddSelectedStyle(_widget);
+                Read(_json, "selectedColor", style.color);
+                if (hasStyle) {
+                    Read(*it, "color", style.color);
+                    Read(*it, "shift", style.shift);
+                    Read(*it, "scale", style.scale);
+                }
             }
 
-            void ReadChildren(const Json& _json, Widget& _parent) {
+            void ReadChildren(const Json& _json, Canvas& _canvas, Widget& _parent) {
                 const auto it = _json.find("children");
                 if (it == _json.end() || !it->is_array()) {
                     return;
@@ -149,27 +163,30 @@ namespace GEUI {
                         continue;
                     }
 
-                    auto widget = std::make_unique<Widget>();
-                    Read(item, "name", widget->name);
-                    Read(item, "anchor", widget->anchor);
-                    Read(item, "pivot", widget->pivot);
-                    Read(item, "offset", widget->offset);
-                    Read(item, "size", widget->size);
-                    Read(item, "color", widget->color);
-                    ReadStyle(item, widget->selectedStyle);
-                    Read(item, "image", widget->image);
-                    widget->type = ReadType(item, widget->image);
-                    if (widget->type == WidgetType::Text) {
-                        ReadText(item, widget->text);
-                    }
-                    Read(item, "visible", widget->visible);
-                    Read(item, "selectable", widget->selectable);
-                    Read(item, "followState", widget->followState);
-                    Read(item, "raisable", widget->raisable);
-                    ReadChildren(item, *widget);
+                    _parent.children.push_back(std::make_unique<Widget>());
+                    Widget& widget = *_parent.children.back();
+                    Read(item, "name", widget.name);
+                    Read(item, "anchor", widget.anchor);
+                    Read(item, "pivot", widget.pivot);
+                    Read(item, "offset", widget.offset);
+                    Read(item, "size", widget.size);
+                    Read(item, "color", widget.color);
+                    widget.visible = ReadFlag(item, "visible", widget.visible);
+                    widget.selectable = ReadFlag(item, "selectable", widget.selectable);
+                    widget.followState = ReadFlag(item, "followState", widget.followState);
+                    widget.raisable = ReadFlag(item, "raisable", widget.raisable);
 
-                    _parent.children.push_back(std::move(widget));
-                    CheckName(_parent, *_parent.children.back());
+                    _canvas.SetType(widget, ReadType(item));
+                    if (std::string* image = _canvas.GetImage(widget)) {
+                        Read(item, "image", *image);
+                    }
+                    if (TextStyle* text = _canvas.GetText(widget)) {
+                        ReadText(item, *text);
+                    }
+                    ReadStyle(item, _canvas, widget);
+
+                    CheckName(_parent, widget);
+                    ReadChildren(item, _canvas, widget);
                 }
             }
 
@@ -181,7 +198,7 @@ namespace GEUI {
                 return Json::array({ _value.x, _value.y, _value.z, _value.w });
             }
 
-            Json WriteChildren(const Widget& _parent) {
+            Json WriteChildren(const Canvas& _canvas, const Widget& _parent) {
                 Json children = Json::array();
                 for (const auto& child : _parent.children) {
                     Json item;
@@ -192,22 +209,24 @@ namespace GEUI {
                     item["offset"] = Write(child->offset);
                     item["size"] = Write(child->size);
                     item["color"] = Write(child->color);
-                    item["selectedStyle"] = {
-                        { "color", Write(child->selectedStyle.color) },
-                        { "shift", Write(child->selectedStyle.shift) },
-                        { "scale", child->selectedStyle.scale },
-                    };
-                    if (child->type == WidgetType::Image) {
-                        item["image"] = child->image;
+                    if (const StateStyle* style = _canvas.GetSelectedStyle(*child)) {
+                        item["selectedStyle"] = {
+                            { "color", Write(style->color) },
+                            { "shift", Write(style->shift) },
+                            { "scale", style->scale },
+                        };
                     }
-                    if (child->type == WidgetType::Text) {
-                        WriteText(item, child->text);
+                    if (const std::string* image = _canvas.GetImage(*child)) {
+                        item["image"] = *image;
                     }
-                    item["visible"] = child->visible;
-                    item["selectable"] = child->selectable;
-                    item["followState"] = child->followState;
-                    item["raisable"] = child->raisable;
-                    item["children"] = WriteChildren(*child);
+                    if (const TextStyle* text = _canvas.GetText(*child)) {
+                        WriteText(item, *text);
+                    }
+                    item["visible"] = static_cast<bool>(child->visible);
+                    item["selectable"] = static_cast<bool>(child->selectable);
+                    item["followState"] = static_cast<bool>(child->followState);
+                    item["raisable"] = static_cast<bool>(child->raisable);
+                    item["children"] = WriteChildren(_canvas, *child);
                     children.push_back(std::move(item));
                 }
                 return children;
@@ -240,14 +259,11 @@ namespace GEUI {
                 Log(std::format("'{}' has no referenceSize", ToText(_path)));
             }
 
-            Widget root;
-            ReadChildren(json, root);
-
             _canvas.Setup(referenceSize);
             _canvas.SetOrder(order);
             _canvas.SetVisible(visible);
             _canvas.SetBlockInput(blockInput);
-            _canvas.GetRoot().children = std::move(root.children);
+            ReadChildren(json, _canvas, _canvas.GetRoot());
 
             // 書かれた名前の番号をすべて見てから、空いている番号を付ける
             FillNames(_canvas.GetRoot());
@@ -260,7 +276,7 @@ namespace GEUI {
             json["order"] = _canvas.GetOrder();
             json["visible"] = _canvas.IsVisible();
             json["blockInput"] = _canvas.IsBlockingInput();
-            json["children"] = WriteChildren(_canvas.GetRoot());
+            json["children"] = WriteChildren(_canvas, _canvas.GetRoot());
 
             // 不正な UTF-8 で例外を投げないよう、置き換えて書く
             const std::string text = json.dump(4, ' ', false, Json::error_handler_t::replace);

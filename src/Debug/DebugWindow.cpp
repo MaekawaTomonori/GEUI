@@ -134,9 +134,9 @@ namespace GEUI {
             }
         }
 
-        void DrawImage(TextureProvider& _textures, Tree::Widget& _widget) {
+        void DrawImage(TextureProvider& _textures, std::string& _image) {
             // 右に「...」ボタンを並べる分だけ、コンボボックスを縮める
-            if (DebugWidgets::BeginCombo("Image", _widget.image.c_str(), ButtonWidth("..."))) {
+            if (DebugWidgets::BeginCombo("Image", _image.c_str(), ButtonWidth("..."))) {
                 // ディスクを読む一覧もあるので、開いたときだけ取り直す
                 if (ImGui::IsWindowAppearing()) {
                     loadedNames.clear();
@@ -150,14 +150,14 @@ namespace GEUI {
 
                 ImGui::SeparatorText("Loaded");
                 for (const std::string& name : loadedNames) {
-                    if (ImGui::Selectable(name.c_str(), name == _widget.image)) {
-                        _widget.image = name;
+                    if (ImGui::Selectable(name.c_str(), name == _image)) {
+                        _image = name;
                     }
                 }
                 ImGui::SeparatorText("Files");
                 for (const std::string& name : availableNames) {
-                    if (ImGui::Selectable(name.c_str(), name == _widget.image)) {
-                        _widget.image = name;
+                    if (ImGui::Selectable(name.c_str(), name == _image)) {
+                        _image = name;
                     }
                 }
                 DebugWidgets::EndCombo();
@@ -165,7 +165,7 @@ namespace GEUI {
 
             ImGui::SameLine();
             if (std::string name; ImGui::Button("...##image") && OpenImage(_textures.GetDirectory(), name)) {
-                _widget.image = name;
+                _image = name;
             }
         }
 
@@ -233,8 +233,8 @@ namespace GEUI {
             part.pivot = { 0.5f, 0.5f };
             part.size = _size;
             part.color = _color;
-            part.selectedStyle.color = _selectedColor;
             part.followState = true;
+            _canvas.AddSelectedStyle(part).color = _selectedColor;
             return part;
         }
 
@@ -243,7 +243,7 @@ namespace GEUI {
             _button.selectable = true;
             AddPart(_canvas, _button, "Background", { 1.0f, 1.0f }, { 0.15f, 0.15f, 0.15f, 1.0f }, { 0.25f, 0.25f, 0.25f, 1.0f });
             Tree::Widget& foreground = AddPart(_canvas, _button, "Foreground", { 0.9f, 0.8f }, { 0.4f, 0.4f, 0.4f, 1.0f }, { 0.9f, 0.6f, 0.2f, 1.0f });
-            foreground.selectedStyle.scale = 1.05f;
+            _canvas.AddSelectedStyle(foreground).scale = 1.05f;
         }
 
         void Apply(Tree::CanvasStack& _canvases, Tree::Canvas& _canvas, const Request& _request) {
@@ -251,17 +251,17 @@ namespace GEUI {
             case Action::Add: {
                 Tree::Widget& widget = _canvas.Create(*_request.target, _request.type);
                 widget.size = { 0.2f, 0.2f };
-                if (widget.type == Tree::WidgetType::Text) {
-                    widget.text.text = "Text";
+                if (Tree::TextStyle* text = _canvas.GetText(widget)) {
+                    text->text = "Text";
                 }
                 if (widget.type == Tree::WidgetType::Button) {
                     AddParts(_canvas, widget);
                 }
-                selectedWidget = _canvases.GetId(widget);
+                selectedWidget = _canvases.GetId(_canvas, widget);
                 break;
             }
             case Action::Remove:
-                _canvases.Remove(*_request.destination, *_request.target);
+                _canvases.Remove(_canvas, *_request.destination, *_request.target);
                 selectedWidget = 0;
                 break;
             case Action::Up:
@@ -360,11 +360,12 @@ namespace GEUI {
 
             ImGui::PushID(&_widget);
             const bool open = ImGui::TreeNodeEx(_widget.name.c_str(), flags);
+            // 描いているのは選ばれている Canvas の木だけなので、持ち主はそれになる
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-                selectedWidget = _canvases.GetId(_widget);
+                selectedWidget = _canvases.GetId(*selectedCanvas, _widget);
             }
             if (ImGui::BeginDragDropSource()) {
-                const uint32_t id = _canvases.GetId(_widget);
+                const uint32_t id = _canvases.GetId(*selectedCanvas, _widget);
                 ImGui::SetDragDropPayload(PAYLOAD, &id, sizeof(id));
                 ImGui::TextUnformatted(_widget.name.c_str());
                 ImGui::EndDragDropSource();
@@ -422,10 +423,18 @@ namespace GEUI {
             }
         }
 
-        void DrawProperties(TextureProvider& _textures, FontCache& _fonts, Tree::Widget& _root, Tree::Widget& _widget) {
+        // ビットフィールドは ImGui にポインタで渡せないので、一度 bool で受けて書き戻す
+        bool Checkbox(const char* _label, bool _value) {
+            ImGui::Checkbox(_label, &_value);
+            return _value;
+        }
+
+        void DrawProperties(TextureProvider& _textures, FontCache& _fonts, Tree::Canvas& _canvas, Tree::Widget& _widget) {
+            Tree::Widget& root = _canvas.GetRoot();
             if (bufferOwner != _widget.id) {
                 Copy(nameBuffer, sizeof(nameBuffer), _widget.name);
-                Copy(textBuffer, sizeof(textBuffer), _widget.text.text);
+                const Tree::TextStyle* text = _canvas.GetText(_widget);
+                Copy(textBuffer, sizeof(textBuffer), text != nullptr ? text->text : std::string());
                 bufferOwner = _widget.id;
             }
 
@@ -433,7 +442,7 @@ namespace GEUI {
             const float typeWidth = ImGui::GetFontSize() * 5.0f;
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - typeWidth - ImGui::GetStyle().ItemSpacing.x);
             if (ImGui::InputText("##Name", nameBuffer, sizeof(nameBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                Tree::Widget* parent = FindParent(_root, _widget);
+                Tree::Widget* parent = FindParent(root, _widget);
                 if (parent == nullptr || !Tree::Rename(*parent, _widget, nameBuffer)) {
                     Copy(nameBuffer, sizeof(nameBuffer), _widget.name);
                 }
@@ -442,7 +451,9 @@ namespace GEUI {
             ImGui::SetNextItemWidth(typeWidth);
             int type = static_cast<int>(_widget.type);
             if (ImGui::Combo("##Type", &type, "Quad\0Image\0Text\0Button\0")) {
-                _widget.type = static_cast<Tree::WidgetType>(type);
+                // 種類ごとの中身は作り直しになるので、文字の入力欄も取り直す
+                _canvas.SetType(_widget, static_cast<Tree::WidgetType>(type));
+                bufferOwner = 0;
             }
 
             if (DebugWidgets::BeginGroup("Layout")) {
@@ -458,39 +469,45 @@ namespace GEUI {
 
             if (DebugWidgets::BeginGroup("Appearance")) {
                 DebugWidgets::ColorEdit4("Color", &_widget.color.x);
-                if (_widget.type == Tree::WidgetType::Image) {
-                    DrawImage(_textures, _widget);
+                if (std::string* image = _canvas.GetImage(_widget)) {
+                    DrawImage(_textures, *image);
                 }
                 DebugWidgets::EndGroup();
             }
 
-            if (_widget.type == Tree::WidgetType::Text && DebugWidgets::BeginGroup("Text")) {
-                DrawTextStyle(_fonts, _widget.text);
+            if (Tree::TextStyle* text = _canvas.GetText(_widget); text != nullptr && DebugWidgets::BeginGroup("Text")) {
+                DrawTextStyle(_fonts, *text);
                 DebugWidgets::EndGroup();
             }
 
             if (DebugWidgets::BeginGroup("Behavior")) {
                 DebugWidgets::Label("Flags");
-                ImGui::Checkbox("Visible", &_widget.visible);
+                _widget.visible = Checkbox("Visible", _widget.visible);
                 ImGui::SameLine();
-                ImGui::Checkbox("Selectable", &_widget.selectable);
+                _widget.selectable = Checkbox("Selectable", _widget.selectable);
                 ImGui::SameLine();
-                ImGui::Checkbox("Follow", &_widget.followState);
+                _widget.followState = Checkbox("Follow", _widget.followState);
                 ImGui::SameLine();
-                ImGui::Checkbox("Raisable", &_widget.raisable);
+                _widget.raisable = Checkbox("Raisable", _widget.raisable);
                 DebugWidgets::EndGroup();
             }
 
-            // 選択中の見た目は、自分か親の状態で選ばれ得る Widget にだけ意味がある
+            // フラグを切っても調整した値を失わないよう、選択中の見た目は手で足して手で消す
             if ((_widget.selectable || _widget.followState) && DebugWidgets::BeginGroup("Selected")) {
                 if (_widget.selectable) {
                     DebugWidgets::Label("State");
-                    ImGui::Checkbox("Selected", &_widget.selected);
+                    _widget.selected = Checkbox("Selected", _widget.selected);
                 }
-                Tree::StateStyle& style = _widget.selectedStyle;
-                DebugWidgets::ColorEdit4("Color", &style.color.x);
-                DebugWidgets::DragFloat2("Shift", &style.shift.x, 0.001f);
-                DebugWidgets::DragFloat("Scale", &style.scale, 0.005f, 0.0f, 4.0f);
+                if (Tree::StateStyle* style = _canvas.GetSelectedStyle(_widget)) {
+                    DebugWidgets::ColorEdit4("Color", &style->color.x);
+                    DebugWidgets::DragFloat2("Shift", &style->shift.x, 0.001f);
+                    DebugWidgets::DragFloat("Scale", &style->scale, 0.005f, 0.0f, 4.0f);
+                    if (ImGui::SmallButton("x##selectedStyle")) {
+                        _canvas.RemoveSelectedStyle(_widget);
+                    }
+                } else if (ImGui::SmallButton("Add Style")) {
+                    _canvas.AddSelectedStyle(_widget);
+                }
                 DebugWidgets::EndGroup();
             }
         }
@@ -528,7 +545,7 @@ namespace GEUI {
             ImGui::SameLine();
             ImGui::BeginChild("Properties", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders);
             if (selected != nullptr) {
-                DrawProperties(_textures, _fonts, root, *selected);
+                DrawProperties(_textures, _fonts, *selectedCanvas, *selected);
             }
             ImGui::EndChild();
 

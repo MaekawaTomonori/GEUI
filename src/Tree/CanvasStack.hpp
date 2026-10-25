@@ -17,9 +17,15 @@ namespace GEUI {
         /** @brief Ordered canvases
          */
         class CanvasStack {
+            // Widget の中身は Canvas が持つので、Widget と一緒に持ち主の Canvas も引けるようにする
+            struct Entry {
+                Widget* widget = nullptr;
+                Canvas* canvas = nullptr;
+            };
+
             std::vector<std::unique_ptr<Canvas>> canvases_;
             std::unordered_map<uint32_t, Canvas*> canvasIds_;
-            std::unordered_map<uint32_t, Widget*> widgetIds_;
+            std::unordered_map<uint32_t, Entry> widgetIds_;
             uint32_t nextId_ = 1;
             std::vector<Instance> instances_;
             std::vector<Widget*> path_;
@@ -49,10 +55,11 @@ namespace GEUI {
             bool Reload(Canvas& _canvas);
 
             /** @brief Remove widget
+             * @param _canvas 持ち主
              * @param _parent 親
              * @param _widget 対象
              */
-            void Remove(Widget& _parent, const Widget& _widget);
+            void Remove(Canvas& _canvas, Widget& _parent, Widget& _widget);
 
             /** @brief Get all canvases
              * @return canvases
@@ -71,11 +78,18 @@ namespace GEUI {
              */
             Widget* GetWidget(uint32_t _id);
 
+            /** @brief Get canvas owning widget
+             * @param _id Widget の番号
+             * @return canvas
+             */
+            Canvas* GetOwner(uint32_t _id);
+
             /** @brief Get widget id
+             * @param _canvas 持ち主
              * @param _widget 対象
              * @return id
              */
-            uint32_t GetId(Widget& _widget);
+            uint32_t GetId(Canvas& _canvas, Widget& _widget);
 
             /** @brief Build instances
              * @param _screenSize 描画先のサイズ
@@ -99,7 +113,7 @@ namespace GEUI {
 
         private:
             void Forget(const Widget& _widget);
-            void Restore(Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids);
+            void Restore(Canvas& _canvas, Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids);
         };
     }
 }

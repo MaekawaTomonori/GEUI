@@ -29,12 +29,18 @@ namespace GEUI {
             return widget;
         }
 
-        Widget ToHandle(Tree::Widget* _widget, std::string_view _name) {
+        Widget ToHandle(Tree::Canvas& _canvas, Tree::Widget* _widget, std::string_view _name) {
             if (_widget == nullptr) {
                 Log(std::format("'{}' not found", _name));
                 return Widget();
             }
-            return Widget(Key{}, GetCurrentCanvases()->GetId(*_widget));
+            return Widget(Key{}, GetCurrentCanvases()->GetId(_canvas, *_widget));
+        }
+
+        // Widget の中身を触る操作は、持ち主の Canvas も要る
+        Tree::Canvas* GetOwner(uint32_t _id) {
+            Tree::CanvasStack* canvases = GetCurrentCanvases();
+            return canvases != nullptr ? canvases->GetOwner(_id) : nullptr;
         }
     }
 
@@ -47,12 +53,12 @@ namespace GEUI {
 
     Widget Widget::Find(std::string_view _path) const {
         Tree::Widget* widget = GetWidget(id_, "Find");
-        return widget != nullptr ? ToHandle(Tree::Find(*widget, _path), _path) : Widget();
+        return widget != nullptr ? ToHandle(*GetOwner(id_), Tree::Find(*widget, _path), _path) : Widget();
     }
 
     Widget Widget::FindAny(std::string_view _name) const {
         Tree::Widget* widget = GetWidget(id_, "FindAny");
-        return widget != nullptr ? ToHandle(Tree::FindAny(*widget, _name), _name) : Widget();
+        return widget != nullptr ? ToHandle(*GetOwner(id_), Tree::FindAny(*widget, _name), _name) : Widget();
     }
 
     void Widget::SetVisible(bool _visible) {
@@ -72,11 +78,12 @@ namespace GEUI {
         if (widget == nullptr) {
             return;
         }
-        if (widget->type != Tree::WidgetType::Image) {
+        std::string* image = GetOwner(id_)->GetImage(*widget);
+        if (image == nullptr) {
             Log(std::format("SetImage on '{}' which is not an image", widget->name));
             return;
         }
-        widget->image = _image;
+        *image = _image;
     }
 
     void Widget::SetText(std::string_view _text) {
@@ -84,11 +91,12 @@ namespace GEUI {
         if (widget == nullptr) {
             return;
         }
-        if (widget->type != Tree::WidgetType::Text) {
+        Tree::TextStyle* text = GetOwner(id_)->GetText(*widget);
+        if (text == nullptr) {
             Log(std::format("SetText on '{}' which is not a text", widget->name));
             return;
         }
-        widget->text.text = _text;
+        text->text = _text;
     }
 
     void Widget::SetSelected(bool _selected) {
@@ -151,11 +159,11 @@ namespace GEUI {
 
     Widget Canvas::Find(std::string_view _path) const {
         Tree::Canvas* canvas = GetCanvas(id_, "Find");
-        return canvas != nullptr ? ToHandle(Tree::Find(canvas->GetRoot(), _path), _path) : Widget();
+        return canvas != nullptr ? ToHandle(*canvas, Tree::Find(canvas->GetRoot(), _path), _path) : Widget();
     }
 
     Widget Canvas::FindAny(std::string_view _name) const {
         Tree::Canvas* canvas = GetCanvas(id_, "FindAny");
-        return canvas != nullptr ? ToHandle(Tree::FindAny(canvas->GetRoot(), _name), _name) : Widget();
+        return canvas != nullptr ? ToHandle(*canvas, Tree::FindAny(canvas->GetRoot(), _name), _name) : Widget();
     }
 }

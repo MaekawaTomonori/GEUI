@@ -101,13 +101,14 @@ namespace GEUI {
 
             loaded.SetPath(_canvas.GetPath());
             _canvas = std::move(loaded);
-            Restore(_canvas.GetRoot(), {}, ids);
+            Restore(_canvas, _canvas.GetRoot(), {}, ids);
             return true;
         }
 
-        void CanvasStack::Remove(Widget& _parent, const Widget& _widget) {
+        void CanvasStack::Remove(Canvas& _canvas, Widget& _parent, Widget& _widget) {
             Forget(_widget);
             path_.clear();
+            _canvas.Release(_widget);
             std::erase_if(_parent.children, [&_widget](const auto& _child) { return _child.get() == &_widget; });
         }
 
@@ -122,14 +123,19 @@ namespace GEUI {
 
         Widget* CanvasStack::GetWidget(uint32_t _id) {
             const auto it = widgetIds_.find(_id);
-            return it != widgetIds_.end() ? it->second : nullptr;
+            return it != widgetIds_.end() ? it->second.widget : nullptr;
+        }
+
+        Canvas* CanvasStack::GetOwner(uint32_t _id) {
+            const auto it = widgetIds_.find(_id);
+            return it != widgetIds_.end() ? it->second.canvas : nullptr;
         }
 
         // ゲームが触る Widget は一部なので、ハンドルを渡すときに初めて番号を振る
-        uint32_t CanvasStack::GetId(Widget& _widget) {
+        uint32_t CanvasStack::GetId(Canvas& _canvas, Widget& _widget) {
             if (_widget.id == 0) {
                 _widget.id = nextId_++;
-                widgetIds_[_widget.id] = &_widget;
+                widgetIds_[_widget.id] = { &_widget, &_canvas };
             }
             return _widget.id;
         }
@@ -186,14 +192,14 @@ namespace GEUI {
             }
         }
 
-        void CanvasStack::Restore(Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids) {
+        void CanvasStack::Restore(Canvas& _canvas, Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids) {
             for (const auto& child : _widget.children) {
                 const std::string path = JoinPath(_prefix, child->name);
                 if (const auto it = _ids.find(path); it != _ids.end()) {
                     child->id = it->second;
-                    widgetIds_[child->id] = child.get();
+                    widgetIds_[child->id] = { child.get(), &_canvas };
                 }
-                Restore(*child, path, _ids);
+                Restore(_canvas, *child, path, _ids);
             }
         }
     }

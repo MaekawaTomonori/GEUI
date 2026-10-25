@@ -120,6 +120,9 @@
     <ClInclude Include="src\Tree\Name.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>
+    <ClInclude Include="src\Tree\Pool.hpp">
+      <Filter>src\Tree</Filter>
+    </ClInclude>
     <ClInclude Include="src\Tree\Widget.hpp">
       <Filter>src\Tree</Filter>
     </ClInclude>

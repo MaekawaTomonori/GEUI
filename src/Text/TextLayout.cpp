@@ -29,8 +29,8 @@ namespace GEUI {
         }
     }
 
-    void AppendText(const Tree::Widget& _widget, const Font& _font, float _scale, std::vector<Instance>& _instances) {
-        const Tree::TextStyle& style = _widget.text;
+    void AppendText(const Tree::TextStyle& _style, const Tree::Rect& _rect, const Vector4& _color, const Font& _font, float _scale, std::vector<Instance>& _instances) {
+        const Tree::TextStyle& style = _style;
         const float pixelSize = style.size * _scale;
         if (pixelSize <= 0.0f) {
             return;
@@ -44,11 +44,11 @@ namespace GEUI {
         const auto lineCount = static_cast<float>(std::count(text.begin(), text.end(), '\n') + 1);
         const float height = lineAdvance * (lineCount - 1.0f) + lineBox;
 
-        const Tree::Rect& rect = _widget.rect;
+        const Tree::Rect& rect = _rect;
         float baseline = rect.min.y + (rect.size.y - height) * AlignFactor(style.alignY) + _font.GetAscent() * glyphScale;
 
         Instance instance{};
-        instance.color = Tree::GetDrawColor(_widget);
+        instance.color = _color;
         instance.texIndex = _font.GetTexIndex();
         instance.kind = KIND_GLYPH;
         // 太さは画面の px で指定するので、アトラス上の距離に直す
