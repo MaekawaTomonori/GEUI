@@ -173,6 +173,7 @@ namespace GEUI {
                     Read(item, "color", widget.color);
                     widget.visible = ReadFlag(item, "visible", widget.visible);
                     widget.selectable = ReadFlag(item, "selectable", widget.selectable);
+                    widget.enabled = ReadFlag(item, "enabled", widget.enabled);
                     widget.followState = ReadFlag(item, "followState", widget.followState);
                     widget.raisable = ReadFlag(item, "raisable", widget.raisable);
 
@@ -224,6 +225,7 @@ namespace GEUI {
                     }
                     item["visible"] = static_cast<bool>(child->visible);
                     item["selectable"] = static_cast<bool>(child->selectable);
+                    item["enabled"] = static_cast<bool>(child->enabled);
                     item["followState"] = static_cast<bool>(child->followState);
                     item["raisable"] = static_cast<bool>(child->raisable);
                     item["children"] = WriteChildren(_canvas, *child);

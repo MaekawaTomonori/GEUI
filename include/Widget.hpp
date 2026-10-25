@@ -28,6 +28,12 @@ namespace GEUI {
          */
         bool IsValid() const;
 
+        /** @brief Compare target
+         * @param _other 比較先
+         * @return same
+         */
+        bool operator==(const Widget& _other) const = default;
+
         /** @brief Find widget by path
          * @param _path パス
          * @return widget
@@ -64,6 +70,16 @@ namespace GEUI {
          * @param _selected 選択中か
          */
         void SetSelected(bool _selected);
+
+        /** @brief Set pressable
+         * @param _enabled 押せるか
+         */
+        void SetEnabled(bool _enabled);
+
+        /** @brief Check pressed in this frame
+         * @return pressed
+         */
+        bool WasPressed() const;
     };
 }
 

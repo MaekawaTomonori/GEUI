@@ -486,6 +486,8 @@ namespace GEUI {
                 ImGui::SameLine();
                 _widget.selectable = Checkbox("Selectable", _widget.selectable);
                 ImGui::SameLine();
+                _widget.enabled = Checkbox("Enabled", _widget.enabled);
+                ImGui::SameLine();
                 _widget.followState = Checkbox("Follow", _widget.followState);
                 ImGui::SameLine();
                 _widget.raisable = Checkbox("Raisable", _widget.raisable);
@@ -496,7 +498,12 @@ namespace GEUI {
             if ((_widget.selectable || _widget.followState) && DebugWidgets::BeginGroup("Selected")) {
                 if (_widget.selectable) {
                     DebugWidgets::Label("State");
-                    _widget.selected = Checkbox("Selected", _widget.selected);
+                    // ゲームからの選択と同じく、Canvas の中で1つだけになるようにする
+                    if (const bool selected = Checkbox("Selected", _widget.selected); selected && !_widget.selected) {
+                        _canvas.Focus(_widget);
+                    } else {
+                        _widget.selected = selected;
+                    }
                 }
                 if (Tree::StateStyle* style = _canvas.GetSelectedStyle(_widget)) {
                     DebugWidgets::ColorEdit4("Color", &style->color.x);

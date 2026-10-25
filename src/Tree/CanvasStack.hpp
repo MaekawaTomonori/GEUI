@@ -29,6 +29,7 @@ namespace GEUI {
             uint32_t nextId_ = 1;
             std::vector<Instance> instances_;
             std::vector<Widget*> path_;
+            Canvas* hit_ = nullptr;
 
         public:
             /** @brief Load canvas
@@ -105,6 +106,12 @@ namespace GEUI {
              */
             bool HitTest(const Vector2& _point);
 
+            /** @brief Move selection under pointer
+             * @param _point 描画先の座標
+             * @return over
+             */
+            bool Hover(const Vector2& _point);
+
             /** @brief Click
              * @param _point 描画先の座標
              * @return over
@@ -112,6 +119,7 @@ namespace GEUI {
             bool Click(const Vector2& _point);
 
         private:
+            Widget* FindSelectable() const;
             void Forget(const Widget& _widget);
             void Restore(Canvas& _canvas, Widget& _widget, const std::string& _prefix, const std::unordered_map<std::string, uint32_t>& _ids);
         };

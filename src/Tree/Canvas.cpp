@@ -1,5 +1,8 @@
 #include "Tree/Canvas.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <memory>
 
 #include "Backend/TextureProvider.hpp"
@@ -14,6 +17,21 @@ namespace GEUI {
             bool Contains(const Rect& _rect, const Vector2& _point) {
                 return _point.x >= _rect.min.x && _point.x < _rect.min.x + _rect.size.x
                     && _point.y >= _rect.min.y && _point.y < _rect.min.y + _rect.size.y;
+            }
+
+            Vector2 GetCenter(const Rect& _rect) {
+                return _rect.min + _rect.size * 0.5f;
+            }
+
+            template <typename Function>
+            void ForEach(Widget& _widget, bool _visibleOnly, const Function& _function) {
+                for (const auto& child : _widget.children) {
+                    if (_visibleOnly && !child->visible) {
+                        continue;
+                    }
+                    _function(*child);
+                    ForEach(*child, _visibleOnly, _function);
+                }
             }
 
             Rect ApplyStyle(const Rect& _rect, const Vector2& _pivot, const StateStyle& _style, const Rect& _parent) {
@@ -62,6 +80,9 @@ namespace GEUI {
         }
 
         void Canvas::Release(Widget& _widget) {
+            if (pressed_ == &_widget) {
+                pressed_ = nullptr;
+            }
             RemoveData(_widget);
             states_.Remove(_widget.selectedStyle);
             for (const auto& child : _widget.children) {
@@ -103,6 +124,90 @@ namespace GEUI {
 
         void Canvas::RemoveSelectedStyle(Widget& _widget) {
             states_.Remove(_widget.selectedStyle);
+        }
+
+        // 選択は Canvas 全体で1つ。どこにあっても選択を移すと前のものが外れるようにする
+        void Canvas::Focus(Widget& _widget) {
+            ForEach(root_, false, [&_widget](Widget& _other) {
+                if (_other.selectable) {
+                    _other.selected = &_other == &_widget;
+                }
+            });
+        }
+
+        Widget* Canvas::GetFocused() {
+            Widget* focused = nullptr;
+            ForEach(root_, false, [&focused](Widget& _widget) {
+                if (focused == nullptr && _widget.selectable && _widget.selected) {
+                    focused = &_widget;
+                }
+            });
+            return focused;
+        }
+
+        void Canvas::Navigate(const Vector2& _direction) {
+            if (!visible_) {
+                return;
+            }
+
+            std::vector<Widget*> candidates;
+            ForEach(root_, true, [&candidates](Widget& _widget) {
+                if (_widget.selectable) {
+                    candidates.push_back(&_widget);
+                }
+            });
+            if (candidates.empty()) {
+                return;
+            }
+
+            // 何も選ばれていなければ、どの向きでも最初のものから始める
+            Widget* current = GetFocused();
+            if (std::find(candidates.begin(), candidates.end(), current) == candidates.end()) {
+                Focus(*candidates.front());
+                return;
+            }
+
+            const Vector2 from = GetCenter(current->rect);
+            Widget* best = nullptr;
+            float bestScore = std::numeric_limits<float>::max();
+            for (Widget* candidate : candidates) {
+                const Vector2 diff = GetCenter(candidate->rect) - from;
+                const float along = diff.x * _direction.x + diff.y * _direction.y;
+                if (candidate == current || along <= 0.0f) {
+                    continue;
+                }
+                // 真っすぐ先にあるものを、近くても横にずれたものより優先する
+                const float across = std::abs(diff.x * _direction.y - diff.y * _direction.x);
+                const float score = std::sqrt(diff.x * diff.x + diff.y * diff.y) + across * 2.0f;
+                if (score < bestScore) {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+            if (best != nullptr) {
+                Focus(*best);
+            }
+        }
+
+        void Canvas::Press(Widget& _widget) {
+            if (_widget.enabled) {
+                pressed_ = &_widget;
+            }
+        }
+
+        void Canvas::Submit() {
+            Widget* focused = GetFocused();
+            if (visible_ && focused != nullptr && focused->visible) {
+                Press(*focused);
+            }
+        }
+
+        const Widget* Canvas::GetPressed() const {
+            return pressed_;
+        }
+
+        void Canvas::ClearPressed() {
+            pressed_ = nullptr;
         }
 
         Rect Canvas::GetReferenceRect() const {

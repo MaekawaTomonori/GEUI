@@ -23,6 +23,7 @@ namespace GEUI {
             Pool<std::string> images_;
             Pool<TextStyle> texts_;
             Pool<StateStyle> states_;
+            Widget* pressed_ = nullptr;
             int order_ = 0;
             bool visible_ = true;
             bool blockInput_ = false;
@@ -118,6 +119,39 @@ namespace GEUI {
              * @param _widget 対象
              */
             void RemoveSelectedStyle(Widget& _widget);
+
+            /** @brief Select only this widget in canvas
+             * @param _widget 対象
+             */
+            void Focus(Widget& _widget);
+
+            /** @brief Get selected widget
+             * @return focused
+             */
+            Widget* GetFocused();
+
+            /** @brief Move selection to nearest widget in direction
+             * @param _direction 画面上の向き（単位ベクトル）
+             */
+            void Navigate(const Vector2& _direction);
+
+            /** @brief Press widget
+             * @param _widget 対象
+             */
+            void Press(Widget& _widget);
+
+            /** @brief Press selected widget
+             */
+            void Submit();
+
+            /** @brief Get widget pressed in this frame
+             * @return pressed
+             */
+            const Widget* GetPressed() const;
+
+            /** @brief Forget pressed widget
+             */
+            void ClearPressed();
 
             /** @brief Get reference rectangle
              * @return referenceRect

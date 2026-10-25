@@ -108,7 +108,22 @@ namespace GEUI {
             Log(std::format("SetSelected on '{}' which is not selectable", widget->name));
             return;
         }
-        widget->selected = _selected;
+        if (_selected) {
+            GetOwner(id_)->Focus(*widget);
+        } else {
+            widget->selected = false;
+        }
+    }
+
+    void Widget::SetEnabled(bool _enabled) {
+        if (Tree::Widget* widget = GetWidget(id_, "SetEnabled")) {
+            widget->enabled = _enabled;
+        }
+    }
+
+    bool Widget::WasPressed() const {
+        const Tree::Widget* widget = GetWidget(id_, "WasPressed");
+        return widget != nullptr && GetOwner(id_)->GetPressed() == widget;
     }
 
     Canvas::Canvas(uint32_t _id) : id_(_id) {}
@@ -165,5 +180,26 @@ namespace GEUI {
     Widget Canvas::FindAny(std::string_view _name) const {
         Tree::Canvas* canvas = GetCanvas(id_, "FindAny");
         return canvas != nullptr ? ToHandle(*canvas, Tree::FindAny(canvas->GetRoot(), _name), _name) : Widget();
+    }
+
+    void Canvas::Navigate(Direction _direction) {
+        // 描画先は y が下向き
+        constexpr Vector2 DIRECTIONS[] = { { 0.0f, -1.0f }, { 0.0f, 1.0f }, { -1.0f, 0.0f }, { 1.0f, 0.0f } };
+        if (Tree::Canvas* canvas = GetCanvas(id_, "Navigate")) {
+            canvas->Navigate(DIRECTIONS[static_cast<size_t>(_direction)]);
+        }
+    }
+
+    void Canvas::Submit() {
+        if (Tree::Canvas* canvas = GetCanvas(id_, "Submit")) {
+            canvas->Submit();
+        }
+    }
+
+    Widget Canvas::GetFocused() const {
+        Tree::Canvas* canvas = GetCanvas(id_, "GetFocused");
+        Tree::Widget* focused = canvas != nullptr ? canvas->GetFocused() : nullptr;
+        // 何も選ばれていないのは普通のことなので、見つからなくても警告しない
+        return focused != nullptr ? Widget(Key{}, GetCurrentCanvases()->GetId(*canvas, *focused)) : Widget();
     }
 }

@@ -92,7 +92,7 @@ namespace GEUI {
             return pointerOver_;
         }
 
-        pointerOver_ = canvases_->HitTest(point);
+        pointerOver_ = canvases_->Hover(point);
         return false;
     }
 

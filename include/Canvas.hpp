@@ -8,6 +8,10 @@
 #include "Widget.hpp"
 
 namespace GEUI {
+    /** @brief Direction of navigation
+     */
+    enum class Direction : uint8_t { Up, Down, Left, Right };
+
     /** @brief Handle to canvas
      */
     class Canvas {
@@ -64,6 +68,20 @@ namespace GEUI {
          * @return widget
          */
         Widget FindAny(std::string_view _name) const;
+
+        /** @brief Move selection
+         * @param _direction 方向
+         */
+        void Navigate(Direction _direction);
+
+        /** @brief Press selected widget
+         */
+        void Submit();
+
+        /** @brief Get selected widget
+         * @return focused
+         */
+        Widget GetFocused() const;
     };
 }
 

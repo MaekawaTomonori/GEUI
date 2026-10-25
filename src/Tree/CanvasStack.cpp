@@ -19,14 +19,6 @@ namespace GEUI {
                 return 0;
             }
 
-            void Select(Widget& _parent, const Widget& _target) {
-                for (const auto& child : _parent.children) {
-                    if (child->selectable) {
-                        child->selected = child.get() == &_target;
-                    }
-                }
-            }
-
             // 入れ替えできない兄弟の位置は変えず、入れ替えできる兄弟の間でだけ末尾へ送る
             void Raise(Widget& _parent, const Widget& _target) {
                 auto& children = _parent.children;
@@ -151,22 +143,38 @@ namespace GEUI {
                 if (canvas->IsVisible()) {
                     canvas->Build(_screenSize, _textures, _fonts, instances_);
                 }
+                // ゲームは描く前の更新で押されたかを読むので、描き終えたら次のフレームのために忘れる
+                canvas->ClearPressed();
             }
             return instances_;
         }
 
         bool CanvasStack::HitTest(const Vector2& _point) {
             path_.clear();
+            hit_ = nullptr;
             for (auto it = canvases_.rbegin(); it != canvases_.rend(); ++it) {
                 Canvas& canvas = **it;
                 if (!canvas.IsVisible()) {
                     continue;
                 }
                 if (canvas.HitTest(_point, path_) || canvas.IsBlockingInput()) {
+                    hit_ = &canvas;
                     return true;
                 }
             }
             return false;
+        }
+
+        bool CanvasStack::Hover(const Vector2& _point) {
+            if (!HitTest(_point)) {
+                return false;
+            }
+
+            // 毎回選び直すと選択の見た目が無駄に揺れないよう、外れているときだけ移す
+            if (Widget* target = FindSelectable(); target != nullptr && !target->selected) {
+                hit_->Focus(*target);
+            }
+            return true;
         }
 
         bool CanvasStack::Click(const Vector2& _point) {
@@ -174,13 +182,19 @@ namespace GEUI {
                 return false;
             }
 
-            if (const size_t index = FindNearest(path_, [](const Widget& _widget) { return _widget.selectable; }); index > 0) {
-                Select(*path_[index - 1], *path_[index]);
+            if (Widget* target = FindSelectable()) {
+                hit_->Focus(*target);
+                hit_->Press(*target);
             }
             if (const size_t index = FindNearest(path_, [](const Widget& _widget) { return _widget.raisable; }); index > 0) {
                 Raise(*path_[index - 1], *path_[index]);
             }
             return true;
+        }
+
+        Widget* CanvasStack::FindSelectable() const {
+            const size_t index = FindNearest(path_, [](const Widget& _widget) { return _widget.selectable; });
+            return index > 0 ? path_[index] : nullptr;
         }
 
         void CanvasStack::Forget(const Widget& _widget) {

@@ -77,6 +77,7 @@ namespace GEUI {
             bool visible : 1 = true;
             bool selectable : 1 = false;
             bool selected : 1 = false;
+            bool enabled : 1 = true;
             bool followState : 1 = false;
             bool raisable : 1 = false;
             bool drawnSelected : 1 = false;
