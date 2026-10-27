@@ -77,6 +77,8 @@ namespace GEUI {
             Vector2 offset{};
             Vector2 size{};
             Vector4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+            // pivot を中心にした拡縮。子と文字にも掛かる
+            float scale = 1.0f;
             Rect rect{};
             uint32_t id = 0;
             uint32_t data = 0;

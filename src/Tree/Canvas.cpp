@@ -34,6 +34,12 @@ namespace GEUI {
                 }
             }
 
+            Rect ScaleAroundPivot(const Rect& _rect, const Vector2& _pivot, float _scale) {
+                const Vector2 pivotPoint = _rect.min + _rect.size * _pivot;
+                const Vector2 size = _rect.size * _scale;
+                return { pivotPoint - size * _pivot, size };
+            }
+
             Rect ApplyStyle(const Rect& _rect, const Vector2& _pivot, const StateStyle& _style, const Rect& _parent) {
                 const Vector2 pivotPoint = _rect.min + _rect.size * _pivot + _parent.size * _style.shift;
                 const Vector2 size = _rect.size * _style.scale;
@@ -277,6 +283,10 @@ namespace GEUI {
             _widget.rect = Resolve(_widget, _parent);
             // 拡縮は子の文字にも掛け、中身ごと大きくなるようにする
             float scale = _scale;
+            if (_widget.scale != 1.0f) {
+                _widget.rect = ScaleAroundPivot(_widget.rect, _widget.pivot, _widget.scale);
+                scale *= _widget.scale;
+            }
             if (const StateStyle* style = GetSelectedStyle(_widget); style != nullptr && _widget.drawnSelected) {
                 _widget.rect = ApplyStyle(_widget.rect, _widget.pivot, *style, _parent);
                 scale *= style->scale;

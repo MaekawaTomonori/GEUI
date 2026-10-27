@@ -170,6 +170,7 @@ namespace GEUI {
                     Read(item, "pivot", widget.pivot);
                     Read(item, "offset", widget.offset);
                     Read(item, "size", widget.size);
+                    Read(item, "scale", widget.scale);
                     Read(item, "color", widget.color);
                     widget.visible = ReadFlag(item, "visible", widget.visible);
                     widget.selectable = ReadFlag(item, "selectable", widget.selectable);
@@ -210,6 +211,7 @@ namespace GEUI {
                     item["pivot"] = Write(child->pivot);
                     item["offset"] = Write(child->offset);
                     item["size"] = Write(child->size);
+                    item["scale"] = child->scale;
                     item["color"] = Write(child->color);
                     if (const StateStyle* style = _canvas.GetSelectedStyle(*child)) {
                         item["selectedStyle"] = {

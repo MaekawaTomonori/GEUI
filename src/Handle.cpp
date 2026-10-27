@@ -73,6 +73,11 @@ namespace GEUI {
         }
     }
 
+    Vector4 Widget::GetColor() const {
+        const Tree::Widget* widget = GetWidget(id_, "GetColor");
+        return widget != nullptr ? widget->color : Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+    }
+
     void Widget::SetImage(std::string_view _image) {
         Tree::Widget* widget = GetWidget(id_, "SetImage");
         if (widget == nullptr) {
@@ -105,10 +110,26 @@ namespace GEUI {
         }
     }
 
+    Vector2 Widget::GetOffset() const {
+        const Tree::Widget* widget = GetWidget(id_, "GetOffset");
+        return widget != nullptr ? widget->offset : Vector2{};
+    }
+
     void Widget::SetSize(const Vector2& _size) {
         if (Tree::Widget* widget = GetWidget(id_, "SetSize")) {
             widget->size = _size;
         }
+    }
+
+    void Widget::SetScale(float _scale) {
+        if (Tree::Widget* widget = GetWidget(id_, "SetScale")) {
+            widget->scale = _scale;
+        }
+    }
+
+    float Widget::GetScale() const {
+        const Tree::Widget* widget = GetWidget(id_, "GetScale");
+        return widget != nullptr ? widget->scale : 1.0f;
     }
 
     void Widget::SetText(std::string_view _text) {

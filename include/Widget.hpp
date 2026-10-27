@@ -57,6 +57,11 @@ namespace GEUI {
          */
         void SetColor(const Vector4& _color);
 
+        /** @brief Get color
+         * @return color
+         */
+        Vector4 GetColor() const;
+
         /** @brief Set image
          * @param _image 画像名
          */
@@ -73,10 +78,25 @@ namespace GEUI {
          */
         void SetOffset(const Vector2& _offset);
 
+        /** @brief Get offset
+         * @return offset
+         */
+        Vector2 GetOffset() const;
+
         /** @brief Set size
          * @param _size 大きさ（親に対する割合）
          */
         void SetSize(const Vector2& _size);
+
+        /** @brief Set scale around pivot (children and text are scaled too)
+         * @param _scale 倍率
+         */
+        void SetScale(float _scale);
+
+        /** @brief Get scale
+         * @return scale
+         */
+        float GetScale() const;
 
         /** @brief Set text
          * @param _text 文字列

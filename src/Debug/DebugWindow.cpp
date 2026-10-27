@@ -461,6 +461,7 @@ namespace GEUI {
                 DebugWidgets::DragFloat2("Pivot", &_widget.pivot.x, 0.01f, 0.0f, 1.0f);
                 DebugWidgets::DragFloat2("Offset", &_widget.offset.x, 0.001f);
                 DebugWidgets::DragFloat2("Size", &_widget.size.x, 0.001f, 0.0f, 0.0f, "WH");
+                DebugWidgets::DragFloat("Scale", &_widget.scale, 0.01f, 0.01f, 10.0f);
                 const Tree::Rect& rect = _widget.rect;
                 DebugWidgets::Label("Rect");
                 ImGui::TextDisabled("%.1f, %.1f   %.1f x %.1f", rect.min.x, rect.min.y, rect.size.x, rect.size.y);
