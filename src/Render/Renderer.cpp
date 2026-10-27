@@ -16,7 +16,12 @@ namespace GEUI {
         constexpr UINT ROOT_SCREEN_SIZE = 0;
         constexpr UINT ROOT_INSTANCES = 1;
         constexpr UINT ROOT_TEXTURES = 2;
+        constexpr UINT ROOT_OUTPUT = 3;
         constexpr UINT VERTEX_COUNT_PER_QUAD = 6;
+
+        bool IsSrgb(DXGI_FORMAT _format) {
+            return _format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB || _format == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB || _format == DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+        }
     }
 
     bool Renderer::Setup(ID3D12Device* _device, DXGI_FORMAT _rtvFormat, const ShaderLoader& _shaders) {
@@ -26,6 +31,8 @@ namespace GEUI {
             return false;
         }
 
+        // 色と画像は sRGB で作られる前提なので、sRGB の描画先では書くときの変換と打ち消すようにリニアへ戻す
+        linearize_ = IsSrgb(_rtvFormat) ? 1 : 0;
         return CreateRootSignature(_device) && CreatePipelineState(_device, _rtvFormat, vertexShader, pixelShader) && CreateInstanceBuffer(_device);
     }
 
@@ -50,11 +57,12 @@ namespace GEUI {
         _commandList->SetGraphicsRoot32BitConstants(ROOT_SCREEN_SIZE, 2, screenSize_, 0);
         _commandList->SetGraphicsRootShaderResourceView(ROOT_INSTANCES, instanceBuffer_->GetGPUVirtualAddress());
         _commandList->SetGraphicsRootDescriptorTable(ROOT_TEXTURES, D3D12_GPU_DESCRIPTOR_HANDLE{ _textureHeap.ptr });
+        _commandList->SetGraphicsRoot32BitConstants(ROOT_OUTPUT, 1, &linearize_, 0);
         _commandList->DrawInstanced(VERTEX_COUNT_PER_QUAD, static_cast<UINT>(count), 0, 0);
     }
 
     bool Renderer::CreateRootSignature(ID3D12Device* _device) {
-        D3D12_ROOT_PARAMETER parameters[3] = {};
+        D3D12_ROOT_PARAMETER parameters[4] = {};
 
         parameters[ROOT_SCREEN_SIZE].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
         parameters[ROOT_SCREEN_SIZE].Constants.ShaderRegister = 0;
@@ -77,6 +85,11 @@ namespace GEUI {
         parameters[ROOT_TEXTURES].DescriptorTable.NumDescriptorRanges = 1;
         parameters[ROOT_TEXTURES].DescriptorTable.pDescriptorRanges = &textureRange;
         parameters[ROOT_TEXTURES].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+        parameters[ROOT_OUTPUT].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+        parameters[ROOT_OUTPUT].Constants.ShaderRegister = 1;
+        parameters[ROOT_OUTPUT].Constants.Num32BitValues = 1;
+        parameters[ROOT_OUTPUT].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
         D3D12_STATIC_SAMPLER_DESC sampler = {};
         sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;

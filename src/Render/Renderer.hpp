@@ -21,6 +21,7 @@ namespace GEUI {
         Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer_;
         Instance* mappedInstances_ = nullptr;
         float screenSize_[2] = {};
+        uint32_t linearize_ = 0;
 
     public:
         /** @brief Initialize
