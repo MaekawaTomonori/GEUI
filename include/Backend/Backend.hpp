@@ -7,6 +7,7 @@
 #include <dxgiformat.h>
 
 #include "Backend/TextureProvider.hpp"
+#include "Math/Vector2.hpp"
 
 struct ID3D12Device;
 struct ID3D12GraphicsCommandList;
@@ -35,8 +36,11 @@ namespace GEUI {
         uint32_t width_ = 0;
         uint32_t height_ = 0;
         ScreenRect viewport_{};
+        Vector2 pointer_{};
         bool hasViewport_ = false;
         bool pointerOver_ = false;
+        bool hasPointer_ = false;
+        bool tracking_ = false;
 
     public:
         Backend();
@@ -64,12 +68,13 @@ namespace GEUI {
         void Render(ID3D12GraphicsCommandList* _commandList);
 
         /** @brief Handle window message
+         * @param _window ウィンドウ（HWND）
          * @param _message メッセージ
          * @param _wParam WPARAM
          * @param _lParam LPARAM
          * @return consumed
          */
-        bool HandleMessage(uint32_t _message, uintptr_t _wParam, intptr_t _lParam);
+        bool HandleMessage(void* _window, uint32_t _message, uintptr_t _wParam, intptr_t _lParam);
 
         /** @brief Set viewport
          * @param _rect 表示先の矩形
@@ -103,6 +108,9 @@ namespace GEUI {
         /** @brief Release
          */
         void Teardown();
+
+    private:
+        void LosePointer();
     };
 }
 

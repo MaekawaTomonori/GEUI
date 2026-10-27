@@ -53,17 +53,32 @@ namespace GEUI {
 
         const Vector2 screenSize = { static_cast<float>(width_), static_cast<float>(height_) };
         const std::span<const Instance> instances = canvases_->Build(screenSize, *textures_, *fonts_);
+        // カーソルが止まっていても、表示や並びが変わればホバーも変わるので、組み立てた矩形で当て直す
+        if (hasPointer_) {
+            canvases_->HitTest(pointer_);
+        }
         // 組み立ての中で初めて使われたフォントがあるので、描く前に写す
         fonts_->Upload(_commandList);
         renderer_->Draw(_commandList, textures_->GetHeap(), instances);
     }
 
-    bool Backend::HandleMessage(uint32_t _message, [[maybe_unused]] uintptr_t _wParam, intptr_t _lParam) {
+    bool Backend::HandleMessage(void* _window, uint32_t _message, [[maybe_unused]] uintptr_t _wParam, intptr_t _lParam) {
         if (canvases_ == nullptr) {
+            return false;
+        }
+        if (_message == WM_MOUSELEAVE) {
+            tracking_ = false;
+            LosePointer();
             return false;
         }
         if (_message != WM_MOUSEMOVE && _message != WM_LBUTTONDOWN) {
             return false;
+        }
+
+        // ウィンドウの外へ出たことは、頼んでおいたときだけ WM_MOUSELEAVE で知らされる
+        if (!tracking_ && _window != nullptr) {
+            TRACKMOUSEEVENT track{ sizeof(TRACKMOUSEEVENT), TME_LEAVE, static_cast<HWND>(_window), 0 };
+            tracking_ = TrackMouseEvent(&track) != FALSE;
         }
 
         // 座標は符号付き 16bit で入っている（マルチモニタでは負になる）
@@ -75,17 +90,19 @@ namespace GEUI {
         const float viewportWidth = viewport.right - viewport.left;
         const float viewportHeight = viewport.bottom - viewport.top;
         if (viewportWidth <= 0.0f || viewportHeight <= 0.0f) {
-            pointerOver_ = false;
+            LosePointer();
             return false;
         }
 
         const Vector2 ratio = { (clientX - viewport.left) / viewportWidth, (clientY - viewport.top) / viewportHeight };
         if (ratio.x < 0.0f || ratio.y < 0.0f || ratio.x >= 1.0f || ratio.y >= 1.0f) {
-            pointerOver_ = false;
+            LosePointer();
             return false;
         }
 
         const Vector2 point = { ratio.x * static_cast<float>(width_), ratio.y * static_cast<float>(height_) };
+        pointer_ = point;
+        hasPointer_ = true;
 
         if (_message == WM_LBUTTONDOWN) {
             pointerOver_ = canvases_->Click(point);
@@ -131,5 +148,13 @@ namespace GEUI {
         textures_ = nullptr;
         hasViewport_ = false;
         pointerOver_ = false;
+        hasPointer_ = false;
+        tracking_ = false;
+    }
+
+    void Backend::LosePointer() {
+        pointerOver_ = false;
+        hasPointer_ = false;
+        canvases_->Leave();
     }
 }

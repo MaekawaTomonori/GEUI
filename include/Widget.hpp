@@ -117,6 +117,11 @@ namespace GEUI {
          * @return pressed
          */
         bool WasPressed() const;
+
+        /** @brief Check pointer is over this widget or descendants
+         * @return hovered
+         */
+        bool IsHovered() const;
     };
 }
 

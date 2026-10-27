@@ -72,6 +72,9 @@ namespace GEUI {
             Forget(canvas->GetRoot());
             canvasIds_.erase(it);
             path_.clear();
+            if (hit_ == canvas) {
+                hit_ = nullptr;
+            }
             std::erase_if(canvases_, [canvas](const auto& _canvas) { return _canvas.get() == canvas; });
         }
 
@@ -190,6 +193,15 @@ namespace GEUI {
                 Raise(*path_[index - 1], *path_[index]);
             }
             return true;
+        }
+
+        bool CanvasStack::IsHovered(const Widget& _widget) const {
+            return std::find(path_.begin(), path_.end(), &_widget) != path_.end();
+        }
+
+        void CanvasStack::Leave() {
+            path_.clear();
+            hit_ = nullptr;
         }
 
         Widget* CanvasStack::FindSelectable() const {

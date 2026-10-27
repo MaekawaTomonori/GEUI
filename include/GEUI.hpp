@@ -5,7 +5,6 @@
 
 #include "Backend/Backend.hpp"
 #include "Canvas.hpp"
-#include "Widget.hpp"
 
 /**
  * @brief GEUI: DirectX12 向けのリテインド型UIライブラリ
@@ -42,12 +41,13 @@ namespace GEUI {
     };
 
     /** @brief Handle window message
+     * @param _window ウィンドウ（HWND）
      * @param _message メッセージ
      * @param _wParam WPARAM
      * @param _lParam LPARAM
      * @return consumed
      */
-    bool HandleMessage(uint32_t _message, uintptr_t _wParam, intptr_t _lParam);
+    bool HandleMessage(void* _window, uint32_t _message, uintptr_t _wParam, intptr_t _lParam);
 
     /** @brief Set viewport
      * @param _rect 表示先の矩形

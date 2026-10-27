@@ -172,6 +172,11 @@ namespace GEUI {
         return widget != nullptr && GetOwner(id_)->GetPressed() == widget;
     }
 
+    bool Widget::IsHovered() const {
+        const Tree::Widget* widget = GetWidget(id_, "IsHovered");
+        return widget != nullptr && GetCurrentCanvases()->IsHovered(*widget);
+    }
+
     Canvas::Canvas(uint32_t _id) : id_(_id) {}
 
     Canvas Canvas::Load(const std::filesystem::path& _path) {

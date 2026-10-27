@@ -36,8 +36,8 @@ namespace GEUI {
         backend_.Teardown();
     }
 
-    bool HandleMessage(uint32_t _message, uintptr_t _wParam, intptr_t _lParam) {
-        return current != nullptr && current->HandleMessage(_message, _wParam, _lParam);
+    bool HandleMessage(void* _window, uint32_t _message, uintptr_t _wParam, intptr_t _lParam) {
+        return current != nullptr && current->HandleMessage(_window, _message, _wParam, _lParam);
     }
 
     void SetViewport(const ScreenRect& _rect) {

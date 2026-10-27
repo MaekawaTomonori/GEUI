@@ -118,6 +118,16 @@ namespace GEUI {
              */
             bool Click(const Vector2& _point);
 
+            /** @brief Check widget is on hit path
+             * @param _widget 対象
+             * @return hovered
+             */
+            bool IsHovered(const Widget& _widget) const;
+
+            /** @brief Forget pointer
+             */
+            void Leave();
+
         private:
             Widget* FindSelectable() const;
             void Forget(const Widget& _widget);
