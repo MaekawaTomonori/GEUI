@@ -109,13 +109,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <GEUIShaderSourceDir>$([MSBuild]::MakeRelative($(SolutionDir), $(ProjectDir)resources\Shaders\).Replace('\', '/'))</GEUIShaderSourceDir>
-    <GEUIShaderCacheDir>$([MSBuild]::MakeRelative($(SolutionDir), $(OutDir)Shaders\).Replace('\', '/'))</GEUIShaderCacheDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>_LIB;_DEBUG;_WINDOWS;_UNICODE;UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;GEUI_SHADER_SOURCE_DIRECTORY=L"$(GEUIShaderSourceDir)";GEUI_SHADER_CACHE_DIRECTORY=L"$(GEUIShaderCacheDir)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_LIB;_DEBUG;_WINDOWS;_UNICODE;UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;GEUI_SHADER_SOURCE_DIRECTORY=L"$(GEUIShaderSourceDir)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)libs;$(GESTDDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -137,7 +136,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>_LIB;NDEBUG;_WINDOWS;_UNICODE;UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;GEUI_SHADER_SOURCE_DIRECTORY=L"$(GEUIShaderSourceDir)";GEUI_SHADER_CACHE_DIRECTORY=L"$(GEUIShaderCacheDir)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_LIB;NDEBUG;_WINDOWS;_UNICODE;UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;GEUI_SHADER_SOURCE_DIRECTORY=L"$(GEUIShaderSourceDir)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)libs;$(GESTDDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>MinSpace</Optimization>

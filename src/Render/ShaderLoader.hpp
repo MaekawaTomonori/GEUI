@@ -11,6 +11,7 @@ namespace GEUI {
      */
     class ShaderLoader {
         std::filesystem::file_time_type sourceTime_ = std::filesystem::file_time_type::min();
+        std::filesystem::path cacheDirectory_;
 
     public:
         /** @brief Initialize

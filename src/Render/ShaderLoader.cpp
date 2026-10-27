@@ -13,7 +13,15 @@
 namespace GEUI {
     namespace {
         constexpr const wchar_t* SOURCE_DIRECTORY = GEUI_SHADER_SOURCE_DIRECTORY;
-        constexpr const wchar_t* CACHE_DIRECTORY = GEUI_SHADER_CACHE_DIRECTORY;
+        constexpr const wchar_t* CACHE_DIRECTORY = L"resources/shader";
+
+        // 作業フォルダは起動の仕方で変わるので、キャッシュは exe の隣に置く
+        std::filesystem::path ExecutableDirectory() {
+            std::wstring path(MAX_PATH, L'\0');
+            const DWORD length = GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()));
+            path.resize(length);
+            return std::filesystem::path(path).parent_path();
+        }
 
         std::vector<uint8_t> ReadFile(const std::filesystem::path& _path) {
             std::ifstream file(_path, std::ios::binary);
@@ -88,6 +96,7 @@ namespace GEUI {
     void ShaderLoader::Setup() {
         // ソースが無いときは min のままにして、どのキャッシュも新しいとみなす
         sourceTime_ = std::filesystem::file_time_type::min();
+        cacheDirectory_ = ExecutableDirectory() / CACHE_DIRECTORY;
 
         std::error_code error;
         for (std::filesystem::directory_iterator it(SOURCE_DIRECTORY, error), end; !error && it != end; it.increment(error)) {
@@ -104,7 +113,7 @@ namespace GEUI {
     }
 
     std::vector<uint8_t> ShaderLoader::Load(const std::wstring& _fileName, const std::wstring& _profile) const {
-        const std::filesystem::path cachePath = std::filesystem::path(CACHE_DIRECTORY) / std::filesystem::path(_fileName).replace_extension(L".cso");
+        const std::filesystem::path cachePath = cacheDirectory_ / std::filesystem::path(_fileName).replace_extension(L".cso");
 
         std::error_code error;
         const std::filesystem::file_time_type cacheTime = std::filesystem::last_write_time(cachePath, error);
